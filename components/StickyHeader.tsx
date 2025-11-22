@@ -22,10 +22,10 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({ isVisible, searchQue
             
             {/* Left: Logo */}
             <div 
-                className="hidden sm:block font-bold uppercase tracking-widest text-sm cursor-pointer select-none" 
+                className="hidden sm:block font-mono font-bold uppercase tracking-widest text-sm cursor-pointer select-none" 
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
-                ANONLOG
+                ANONLOG 1.01
             </div>
             
             {/* Center: Compact Search */}
