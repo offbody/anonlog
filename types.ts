@@ -17,6 +17,7 @@ export interface Translations {
   footer: string;
   search_label: string;
   search_placeholder: string;
+  search_placeholder_short: string;
   search_clear: string;
   input_placeholder: string;
   chars_label: string;
@@ -51,6 +52,7 @@ export interface Translations {
   login_btn: string;
   logout_btn: string;
   block_btn: string;
+  admin_badge: string;
 }
 
 export interface MessageInputProps {

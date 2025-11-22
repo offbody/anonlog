@@ -9,7 +9,7 @@ type SortOrder = 'newest' | 'oldest';
 
 export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, highlightedMessageId, allMessagesRaw, isAdmin, t, locale }) => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('oldest');
 
   const [lastReadTime, setLastReadTime] = useState<number>(() => {
       const stored = localStorage.getItem(LAST_READ_KEY);

@@ -12,6 +12,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     footer: 'Secure // Anonymous // Persistent',
     search_label: 'SEARCH //',
     search_placeholder: 'KEYWORD OR TAG...',
+    search_placeholder_short: 'SEARCH...',
     search_clear: '[CLEAR]',
     input_placeholder: 'ENTER MESSAGE...',
     chars_label: 'CHARS',
@@ -45,12 +46,14 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     login_btn: 'ENTER SYSTEM',
     logout_btn: 'LOGOUT',
     block_btn: 'BLOCK USER',
+    admin_badge: 'ADMIN',
   },
   ru: {
     system_name: 'АНОНЛОГ 1.01 // ВАЙБ НУЛЕВЫХ',
     footer: 'Безопасно // Анонимно // Надежно',
     search_label: 'ПОИСК //',
     search_placeholder: 'КЛЮЧЕВОЕ СЛОВО ИЛИ ТЕГ...',
+    search_placeholder_short: 'ПОИСК...',
     search_clear: '[ОЧИСТИТЬ]',
     input_placeholder: 'ВВЕДИТЕ СООБЩЕНИЕ...',
     chars_label: 'СИМВ',
@@ -84,5 +87,6 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     login_btn: 'ВОЙТИ В СИСТЕМУ',
     logout_btn: 'ВЫЙТИ',
     block_btn: 'ЗАБЛОКИРОВАТЬ',
+    admin_badge: 'АДМИН',
   }
 };
