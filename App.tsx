@@ -40,16 +40,25 @@ const App: React.FC = () => {
     setLanguage(prev => prev === 'ru' ? 'en' : 'ru');
   };
   
-  // Theme State
-  const [isDark, setIsDark] = useState(false);
+  // Theme State with Persistence
+  const [isDark, setIsDark] = useState(() => {
+    // Check localStorage on initial load
+    if (typeof window !== 'undefined') {
+        const savedTheme = localStorage.getItem('anon_log_theme');
+        if (savedTheme) {
+            return savedTheme === 'dark';
+        }
+    }
+    return false; // Default to light
+  });
 
-  // Initialize theme based on system preference or previous session could go here.
-  // For now, we default to light to match the initial request.
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('anon_log_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('anon_log_theme', 'light');
     }
   }, [isDark]);
 
@@ -127,8 +136,7 @@ const App: React.FC = () => {
           {/* Responsive Header */}
           <header className="mb-12 w-full">
             
-            {/* 1. DESKTOP & TABLET LANDSCAPE (Large Screens) - Single Line via Flexbox */}
-            {/* Using Flex instead of Grid ensures items push each other rather than overlapping if space is tight */}
+            {/* 1. DESKTOP & TABLET LANDSCAPE (Large Screens) - Flexbox Layout (Fixed Grid Issue) */}
             <div className="hidden lg:flex items-center justify-between h-10 gap-4">
                 
                 {/* Left Column: Language - Flex-1 ensures equal spacing pull */}

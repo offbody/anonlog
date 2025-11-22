@@ -5,6 +5,8 @@ import { MessageItemProps } from '../types';
 export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId, onReply, onTagClick, parentSequenceNumber, t, locale }) => {
   const date = new Date(message.timestamp);
   const timeString = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const dateString = date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
+  
   const seqId = message.sequenceNumber.toString().padStart(3, '0');
   const isOwnMessage = message.senderId === currentUserId;
 
@@ -111,9 +113,9 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId
                 {/* Separator */}
                 <span className="opacity-30">//</span>
 
-                {/* Time */}
+                {/* Date & Time */}
                 <span className="font-mono whitespace-nowrap">
-                    {timeString}
+                    {dateString} {timeString}
                 </span>
 
                 {/* "YOU" Badge */}

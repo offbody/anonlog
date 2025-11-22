@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 
 // TODO: Вставь сюда данные из консоли Firebase (Project Settings -> Your apps -> SDK setup and configuration)
 const firebaseConfig = {
-  apiKey: "ВAIzaSyDz5oNkecJNWdH8rIIofFS90GatsGFd26A",
+  apiKey: "AIzaSyDz5oNkecJNWdH8rIIofFS90GatsGFd26A",
   authDomain: "anonlog-debbf.firebaseapp.com",
   projectId: "anonlog-debbf",
   storageBucket: "anonlog-debbf.firebasestorage.app",

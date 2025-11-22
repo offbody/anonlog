@@ -149,7 +149,7 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             placeholder={t.input_placeholder}
-            className="w-full flex-1 bg-transparent text-black dark:text-white px-8 py-6 text-lg font-bold placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none resize-none"
+            className="w-full flex-1 bg-transparent text-black dark:text-white px-8 py-6 text-lg placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none resize-none"
           />
           
           {/* Footer: Char count & Add Tag Button - Relative Flex Item */}

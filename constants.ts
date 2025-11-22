@@ -3,7 +3,7 @@ import { Translations, Language } from './types';
 
 export const STORAGE_KEY = 'anon_log_messages';
 export const LAST_READ_KEY = 'anon_log_last_read_mine';
-export const MAX_MESSAGE_LENGTH = 300;
+export const MAX_MESSAGE_LENGTH = 1200;
 export const MAX_TAG_LENGTH = 32;
 
 export const TRANSLATIONS: Record<Language, Translations> = {
@@ -62,8 +62,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     copy_btn: 'Копировать',
     quick_entry_label: 'БЫСТРЫЙ ВВОД //',
     send_btn: 'ОТПРАВИТЬ',
-    theme_light: 'СВЕТ',
-    theme_dark: 'ТЬМА',
+    theme_light: 'ДЕНЬ',
+    theme_dark: 'НОЧЬ',
     session_key_label: 'КЛЮЧ СЕССИИ',
     session_expl_text: 'Это криптографический слепок Вашей личности. При очистке журнала браузера слепок, и все сообщения этого слепка - удалятся.',
     add_tag_btn: 'ДОБАВИТЬ ТЕГ',
