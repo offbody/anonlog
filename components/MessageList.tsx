@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { MessageListProps } from '../types';
 import { MessageItem } from './MessageItem';
@@ -6,7 +7,7 @@ import { LAST_READ_KEY } from '../constants';
 type TabType = 'all' | 'mine';
 type SortOrder = 'newest' | 'oldest';
 
-export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, onReply, onTagClick, onFlashMessage, highlightedMessageId, allMessagesRaw, t, locale }) => {
+export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, highlightedMessageId, allMessagesRaw, isAdmin, t, locale }) => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
 
@@ -150,9 +151,12 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                         onReply={onReply}
                         onTagClick={onTagClick}
                         onFlashMessage={onFlashMessage}
+                        onDeleteMessage={onDeleteMessage}
+                        onBlockUser={onBlockUser}
                         parentSequenceNumber={seq}
                         parentSenderId={senderId}
                         isFlashHighlighted={highlightedMessageId === msg.id}
+                        isAdmin={isAdmin}
                         t={t}
                         locale={locale}
                     />

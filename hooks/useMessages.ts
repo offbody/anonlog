@@ -1,9 +1,12 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Message } from '../types';
 import { db } from '../firebaseConfig';
 import { 
   collection, 
   addDoc, 
+  deleteDoc,
+  doc,
   onSnapshot, 
   query, 
   orderBy
@@ -14,6 +17,7 @@ const USER_ID_KEY = 'anon_log_user_id';
 export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userId, setUserId] = useState<string>('');
+  const [bannedUserIds, setBannedUserIds] = useState<Set<string>>(new Set());
 
   // 1. Initialize User ID (Client Side Identity)
   useEffect(() => {
@@ -25,7 +29,16 @@ export const useMessages = () => {
     setUserId(storedUserId);
   }, []);
 
-  // 2. Subscribe to Firestore Messages (Real-time)
+  // 2. Subscribe to Banned Users
+  useEffect(() => {
+      const unsubscribeBans = onSnapshot(collection(db, 'banned_users'), (snapshot) => {
+          const bans = new Set(snapshot.docs.map(doc => doc.data().userId));
+          setBannedUserIds(bans);
+      });
+      return () => unsubscribeBans();
+  }, []);
+
+  // 3. Subscribe to Firestore Messages (Real-time)
   useEffect(() => {
     // Query messages sorted by timestamp descending (newest first)
     const q = query(collection(db, 'messages'), orderBy('timestamp', 'desc'));
@@ -45,7 +58,7 @@ export const useMessages = () => {
     return () => unsubscribe();
   }, []);
 
-  // 3. Add Message Function
+  // 4. Add Message Function
   const addMessage = useCallback(async (content: string, parentId?: string, manualTags: string[] = []) => {
     if (!userId) return;
 
@@ -63,11 +76,9 @@ export const useMessages = () => {
       .map(tag => tag.toLowerCase());
 
     try {
-      // OPTIMIZATION: Calculate Next Sequence Locally
-      // Instead of asking the server (slow), we look at the local messages we already have.
-      // Since messages are sorted by timestamp desc, the first one usually has the highest sequence.
-      // We iterate to be safe (in case of sorting race conditions), but purely in memory.
-      
+      // OPTIMISTIC UPDATE (Client-side)
+      // We don't wait for server calculation to avoid delay. 
+      // We use the current max sequence + 1.
       let nextSequence = 1;
       if (messages.length > 0) {
           const maxSeq = Math.max(...messages.map(m => m.sequenceNumber || 0));
@@ -83,21 +94,47 @@ export const useMessages = () => {
         parentId: parentId || null,
         tags: uniqueTags
       };
+      
+      // Optimistic render could be done here, but Firestore is fast enough with this fix.
+      // The main lag was caused by the `getDocs` call we removed.
 
       // Write to Firebase
-      // Firebase SDK handles this optimistically locally, then syncs to cloud.
-      // Since we removed the 'await getDocs', this line executes immediately after calculation.
       await addDoc(collection(db, 'messages'), newMessage);
 
     } catch (e) {
       console.error("Error adding document: ", e);
     }
 
-  }, [userId, messages]); // Added messages dependency to calculate sequence
+  }, [userId, messages]);
+
+  // 5. Delete Message Function (Admin)
+  const deleteMessage = useCallback(async (id: string) => {
+      try {
+          await deleteDoc(doc(db, 'messages', id));
+      } catch (e) {
+          console.error("Error deleting document: ", e);
+          alert("Ошибка удаления. Проверьте правила Firebase.");
+      }
+  }, []);
+
+  // 6. Block User Function (Admin)
+  const blockUser = useCallback(async (senderId: string) => {
+      try {
+          await addDoc(collection(db, 'banned_users'), { userId: senderId, timestamp: Date.now() });
+      } catch (e) {
+          console.error("Error blocking user: ", e);
+          alert("Ошибка блокировки.");
+      }
+  }, []);
+
+  // Filter out messages from banned users
+  const visibleMessages = messages.filter(msg => !bannedUserIds.has(msg.senderId));
 
   return {
-    messages,
+    messages: visibleMessages,
     addMessage,
+    deleteMessage,
+    blockUser,
     userId
   };
 };

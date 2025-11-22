@@ -1,3 +1,4 @@
+
 export interface Message {
   id: string;
   content: string;
@@ -44,6 +45,11 @@ export interface Translations {
   preloader_title: string;
   preloader_subtitle: string;
   next_msg_label: string;
+  // Admin
+  admin_login_title: string;
+  login_btn: string;
+  logout_btn: string;
+  block_btn: string;
 }
 
 export interface MessageInputProps {
@@ -61,8 +67,11 @@ export interface MessageListProps {
   onReply: (message: Message) => void;
   onTagClick: (tag: string) => void;
   onFlashMessage: (id: string) => void;
+  onDeleteMessage: (id: string) => void;
+  onBlockUser: (senderId: string) => void;
   highlightedMessageId: string | null;
   allMessagesRaw?: Message[]; // Needed to lookup parent sequence numbers
+  isAdmin: boolean;
   t: Translations;
   locale: string;
 }
@@ -73,9 +82,12 @@ export interface MessageItemProps {
   onReply: (message: Message) => void;
   onTagClick: (tag: string) => void;
   onFlashMessage: (id: string) => void;
+  onDeleteMessage: (id: string) => void;
+  onBlockUser: (senderId: string) => void;
   parentSequenceNumber?: number; // Kept for fallback
   parentSenderId?: string; // For "Reply to #HASH"
   isFlashHighlighted?: boolean;
+  isAdmin: boolean;
   t: Translations;
   locale: string;
 }

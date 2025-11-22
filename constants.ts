@@ -1,3 +1,4 @@
+
 import { Translations, Language } from './types';
 
 export const STORAGE_KEY = 'anon_log_messages';
@@ -40,6 +41,10 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     preloader_title: 'ANONLOG',
     preloader_subtitle: 'LOAD MESSAGES',
     next_msg_label: 'NEXT MESSAGE',
+    admin_login_title: 'GOD MODE ACCESS',
+    login_btn: 'ENTER SYSTEM',
+    logout_btn: 'LOGOUT',
+    block_btn: 'BLOCK USER',
   },
   ru: {
     system_name: 'АНОНЛОГ 1.01 // ВАЙБ НУЛЕВЫХ',
@@ -75,5 +80,9 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     preloader_title: 'АНОНЛОГ',
     preloader_subtitle: 'ЗАГРУЗКА СООБЩЕНИЙ',
     next_msg_label: 'СЛЕД. СООБЩЕНИЕ',
+    admin_login_title: 'ДОСТУП К РЕЖИМУ БОГА',
+    login_btn: 'ВОЙТИ В СИСТЕМУ',
+    logout_btn: 'ВЫЙТИ',
+    block_btn: 'ЗАБЛОКИРОВАТЬ',
   }
 };

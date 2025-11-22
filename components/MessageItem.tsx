@@ -1,8 +1,9 @@
+
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { MessageItemProps } from '../types';
 import { IdentityWidget } from './IdentityWidget';
 
-export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId, onReply, onTagClick, onFlashMessage, parentSequenceNumber, parentSenderId, isFlashHighlighted, t, locale }) => {
+export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, parentSequenceNumber, parentSenderId, isFlashHighlighted, isAdmin, t, locale }) => {
   const date = new Date(message.timestamp);
   const timeString = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
   const dateString = date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -49,6 +50,20 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId
   const handleReplyAction = () => {
     onReply(message);
     setShowMobileMenu(false);
+  };
+
+  const handleDeleteAction = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (window.confirm("ADMIN: Удалить это сообщение?")) {
+          onDeleteMessage(message.id);
+      }
+  };
+
+  const handleBlockAction = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (window.confirm("ADMIN: ЗАБЛОКИРОВАТЬ ПОЛЬЗОВАТЕЛЯ? Его сообщения перестанут отображаться.")) {
+          onBlockUser(message.senderId);
+      }
   };
 
   const handleScrollToParent = (e: React.MouseEvent) => {
@@ -107,6 +122,25 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId
         onMouseUp={handleTouchEnd}
         onMouseLeave={handleTouchEnd}
       >
+        {/* ADMIN BUTTONS */}
+        {isAdmin && (
+            <div className="absolute top-2 right-2 flex gap-2 z-20">
+                <button
+                    onClick={handleBlockAction}
+                    className="px-2 h-6 bg-black text-white flex items-center justify-center font-bold shadow-md hover:bg-gray-800 text-[10px] uppercase tracking-wider"
+                    title="ADMIN: Block User"
+                >
+                    BLOCK
+                </button>
+                <button
+                    onClick={handleDeleteAction}
+                    className="w-6 h-6 bg-red-500 text-white flex items-center justify-center rounded-full font-bold shadow-md hover:bg-red-600"
+                    title="ADMIN: Delete Message"
+                >
+                    X
+                </button>
+            </div>
+        )}
         
         {/* 1. META HEADER */}
         <div className="flex items-center justify-between w-full border-b border-black/5 dark:border-white/5 pb-2 mb-1">

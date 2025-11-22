@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { MessageList } from './components/MessageList';
@@ -11,16 +12,57 @@ import { IdentityWidget } from './components/IdentityWidget';
 import { IllustrationSender } from './components/IllustrationSender';
 import { IllustrationReceiver } from './components/IllustrationReceiver';
 import { ScrollToTop } from './components/ScrollToTop';
+import { AdminLogin } from './components/AdminLogin';
 import { useMessages } from './hooks/useMessages';
 import { Message, Language } from './types';
 import { TRANSLATIONS } from './constants';
+import { auth } from './firebaseConfig';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const App: React.FC = () => {
-  const { messages, addMessage, userId } = useMessages();
+  const { messages, addMessage, deleteMessage, blockUser, userId } = useMessages();
   const [searchQuery, setSearchQuery] = useState('');
   const [showStickyInput, setShowStickyInput] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   
+  // Admin Logic (Secure)
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+
+  // Check for God Mode URL on mount
+  useEffect(() => {
+    if (window.location.pathname === '/godmode') {
+      setShowAdminLogin(true);
+    }
+  }, []);
+
+  // Monitor Firebase Auth State
+  useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+              setIsAdmin(true);
+          } else {
+              setIsAdmin(false);
+          }
+          setIsAuthChecked(true);
+      });
+      return () => unsubscribe();
+  }, []);
+
+  const handleAdminLogin = (success: boolean) => {
+      if (success) {
+          setShowAdminLogin(false);
+          window.history.replaceState(null, '', '/');
+      }
+  };
+
+  const handleAdminLogout = async () => {
+      await signOut(auth);
+      setIsAdmin(false);
+      alert('LOGGED OUT FROM GOD MODE');
+  };
+
   // Cooldown Logic
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const lastSentTime = useRef<number>(0);
@@ -30,7 +72,6 @@ const App: React.FC = () => {
 
   const handleFlashMessage = (id: string) => {
     setHighlightedMessageId(id);
-    // Clear highlight after animation plays (e.g. 2 seconds)
     setTimeout(() => {
         setHighlightedMessageId(null);
     }, 2000);
@@ -147,6 +188,12 @@ const App: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // RENDER GOD MODE LOGIN
+  // Only show login if user is not already authenticated
+  if (showAdminLogin && !isAdmin && isAuthChecked) {
+      return <AdminLogin onLogin={handleAdminLogin} t={t} />;
+  }
+
   return (
     <>
       <Preloader isVisible={isLoading} t={t} />
@@ -168,13 +215,18 @@ const App: React.FC = () => {
                 <div className="flex-1 flex justify-start">
                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
                 </div>
-                <div className="shrink-0">
+                <div className="shrink-0 flex gap-4">
                     <a 
                       href="/"
                       className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
                     >
                       {t.system_name}
                     </a>
+                    {isAdmin && (
+                        <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 hover:bg-red-600">
+                            {t.logout_btn}
+                        </button>
+                    )}
                 </div>
                 <div className="flex-1 flex justify-end items-center gap-8">
                    <IdentityWidget userId={userId} t={t} />
@@ -189,13 +241,18 @@ const App: React.FC = () => {
                     <IdentityWidget userId={userId} t={t} />
                     <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
                 </div>
-                <div className="flex justify-center w-full">
+                <div className="flex justify-center items-center gap-2 w-full">
                     <a 
                       href="/"
                       className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
                     >
                       {t.system_name}
                     </a>
+                    {isAdmin && (
+                        <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 py-1 hover:bg-red-600">
+                            {t.logout_btn}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -205,13 +262,18 @@ const App: React.FC = () => {
                     <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
                     <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
                 </div>
-                <div className="flex justify-center w-full">
+                <div className="flex justify-center items-center gap-2 w-full">
                     <a 
                       href="/"
                       className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-center leading-relaxed"
                     >
                       {t.system_name}
                     </a>
+                    {isAdmin && (
+                        <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 py-1 hover:bg-red-600">
+                            [X]
+                        </button>
+                    )}
                 </div>
                 <div className="flex justify-center w-full">
                     <IdentityWidget userId={userId} t={t} />
@@ -250,7 +312,10 @@ const App: React.FC = () => {
                   onReply={setReplyingTo}
                   onTagClick={handleTagClick}
                   onFlashMessage={handleFlashMessage}
+                  onDeleteMessage={deleteMessage}
+                  onBlockUser={blockUser}
                   highlightedMessageId={highlightedMessageId}
+                  isAdmin={isAdmin}
                   t={t}
                   locale={locale}
               />
