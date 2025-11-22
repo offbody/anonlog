@@ -16,8 +16,6 @@ const USER_ID_KEY = 'anon_log_user_id';
 
 export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isLoaded, setIsLoaded] = useState(false);
   const [userId, setUserId] = useState<string>('');
 
   // 1. Initialize User ID (Client Side Identity)
@@ -42,7 +40,6 @@ export const useMessages = () => {
       })) as Message[];
       
       setMessages(msgs);
-      setIsLoaded(true);
     }, (error) => {
       console.error("Error fetching messages from Firebase:", error);
     });

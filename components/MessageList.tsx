@@ -154,7 +154,8 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                 currentUserId={currentUserId}
                 onReply={onReply}
                 onTagClick={onTagClick}
-                parentSequenceNumber={getParentSequence(msg.parentId)}
+                // Fix: Handle potential null parentId by falling back to undefined
+                parentSequenceNumber={getParentSequence(msg.parentId || undefined)}
                 t={t}
                 locale={locale}
             />
