@@ -46,6 +46,9 @@ export interface Translations {
   sort_newest: string;
   sort_oldest: string;
   sort_best: string;
+  sort_newest_short: string;
+  sort_oldest_short: string;
+  sort_best_short: string;
   popular_tags_label: string;
   preloader_title: string;
   preloader_subtitle: string;
