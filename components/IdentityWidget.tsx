@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import { Translations } from '../types';
 
@@ -47,10 +48,10 @@ export const IdentityWidget: React.FC<IdentityWidgetProps> = ({ userId, t, compa
       )}
       
       <div 
-        className={`flex items-center transition-shadow ${
-            isSmall 
-                ? 'gap-2 border-none bg-transparent p-0' // Minimalist style for messages
-                : 'gap-3 px-3 py-1 border border-black dark:border-white bg-white dark:bg-[#0a0a0a]' // Boxed style for header
+        className={`flex items-center transition-shadow gap-3 ${
+            !isSmall 
+            ? 'border border-black dark:border-white px-3 py-1 bg-transparent' 
+            : 'border-none p-0 bg-transparent'
         }`}
       >
         {/* Visual "Chip" - Unique Color */}
@@ -94,22 +95,42 @@ export const IdentityWidget: React.FC<IdentityWidgetProps> = ({ userId, t, compa
 
             {/* Tooltip */}
             {isTooltipOpen && (
-                <div className="absolute right-0 top-full mt-4 w-72 p-6 bg-white dark:bg-[#1a1a1a] border border-black dark:border-white shadow-[0_10px_40px_rgba(0,0,0,0.2)] clip-corner z-50">
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">FULL HASH ID</span>
-                        <span className="font-mono text-xl font-bold break-all leading-tight text-black dark:text-white">
-                            {userId}
-                        </span>
+                <>
+                    {/* Mobile Tooltip (Centered Modal Style) */}
+                    {/* Fixed positioning centered on screen to prevent overflow issues on any orientation */}
+                    <div className="sm:hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-xs p-6 bg-white dark:bg-[#1a1a1a] border border-black dark:border-white shadow-[0_10px_40px_rgba(0,0,0,0.4)] z-[100]">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">FULL HASH ID</span>
+                                <span className="font-mono text-xl font-bold break-all leading-tight text-black dark:text-white">
+                                    {userId}
+                                </span>
+                            </div>
+                            <div className="w-full h-[1px] bg-black/10 dark:bg-white/10"></div>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {t.session_expl_text}
+                            </p>
+                        </div>
                     </div>
-                    <div className="w-full h-[1px] bg-black/10 dark:bg-white/10"></div>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {t.session_expl_text}
-                    </p>
-                </div>
-                {/* Decorative corner line */}
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-black dark:border-white"></div>
-                </div>
+
+                    {/* Desktop Tooltip (Absolute anchored) */}
+                    <div className="hidden sm:block absolute right-0 top-full mt-4 w-72 p-6 bg-white dark:bg-[#1a1a1a] border border-black dark:border-white shadow-[0_10px_40px_rgba(0,0,0,0.2)] clip-corner z-50">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">FULL HASH ID</span>
+                                <span className="font-mono text-xl font-bold break-all leading-tight text-black dark:text-white">
+                                    {userId}
+                                </span>
+                            </div>
+                            <div className="w-full h-[1px] bg-black/10 dark:bg-white/10"></div>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {t.session_expl_text}
+                            </p>
+                        </div>
+                        {/* Decorative corner line */}
+                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-black dark:border-white"></div>
+                    </div>
+                </>
             )}
         </div>
       )}

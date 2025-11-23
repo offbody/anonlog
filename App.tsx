@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { MessageList } from './components/MessageList';
@@ -397,8 +398,8 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* MOBILE */}
-            <div className="flex md:hidden flex-col gap-6">
+            {/* MOBILE HEADER */}
+            <div className="flex md:hidden flex-col gap-2">
                 {isSearchMode ? (
                     <div className="flex items-center gap-3 w-full border-b border-black dark:border-white pb-2 h-10 transition-all">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 shrink-0">
@@ -427,9 +428,24 @@ const App: React.FC = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full h-10">
-                        <IdentityWidget userId={userId} t={t} compact={true} />
-                        <div className="flex items-center gap-3">
+                    <div className="w-full h-10 flex sm:grid sm:grid-cols-3 items-center justify-between relative">
+                        {/* Left: Identity */}
+                        <div className="flex items-center justify-start">
+                            <IdentityWidget userId={userId} t={t} compact={true} />
+                        </div>
+                        
+                        {/* Center: Logo (Landscape only) */}
+                        <div className="hidden sm:flex items-center justify-center">
+                             <a 
+                              href="/"
+                              className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black leading-none whitespace-nowrap"
+                            >
+                              {t.system_name}
+                            </a>
+                        </div>
+
+                        {/* Right: Icons */}
+                        <div className="flex items-center justify-end gap-3">
                             <button 
                                 onClick={toggleTheme}
                                 className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black dark:text-white hover:opacity-70 transition-opacity"
@@ -463,19 +479,11 @@ const App: React.FC = () => {
                     </div>
                 )}
                 
-                <div className="hidden sm:flex justify-center items-center w-full">
+                {/* Logo for Mobile Portrait only (< sm) */}
+                <div className="sm:hidden flex justify-center items-center w-full mt-2">
                     <a 
                       href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
-                    >
-                      {t.system_name}
-                    </a>
-                </div>
-                {/* Mobile Landscape Logo Position */}
-                <div className="sm:hidden flex justify-center">
-                     <a 
-                      href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                      className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap"
                     >
                       {t.system_name}
                     </a>

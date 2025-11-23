@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { MessageItemProps } from '../types';
 import { IdentityWidget } from './IdentityWidget';
@@ -259,7 +260,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId
         )}
 
         {/* 3. CONTENT SECTION (Regular font weight) */}
-        <div className="w-full relative">
+        <div className="w-full relative pb-16">
           <p className="text-black dark:text-white text-lg font-normal leading-snug break-words whitespace-pre-wrap">
             {renderContent(message.content)}
           </p>
