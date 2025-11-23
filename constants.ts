@@ -6,6 +6,17 @@ export const LAST_READ_KEY = 'anon_log_last_read_mine';
 export const MAX_MESSAGE_LENGTH = 1200;
 export const MAX_TAG_LENGTH = 32;
 
+export const PREDEFINED_TAGS = [
+  'Психология', 'Успех', 'Мотивация', 'Лайфхаки', 'Деньги', 'Карьера',
+  'Любовь', 'Отношения', 'Расставание', 'Секс', 'Ревность', 'Советы',
+  'Путешествия', 'Приключения', 'Природа', 'Еда', 'Здоровое питание',
+  'Вино', 'Здоровье', 'Спорт', 'Косметика', 'Стиль', 'ЗОЖ',
+  'Ментальное здоровье', 'Кино', 'Сериалы', 'Музыка', 'Книги', 'Игры',
+  'Искусство', 'Фотография', 'Творчество', 'Технологии',
+  'Искусственный интеллект', 'Бизнес', 'Криптовалюты', 'Дом', 'Ремонт',
+  'Домашние животные', 'Новости', 'Тренды', 'Мемы', 'База', 'Мнение'
+];
+
 export const TRANSLATIONS: Record<Language, Translations> = {
   en: {
     system_name: 'ANONLOG 1.01 // 00s VIBE',
@@ -40,6 +51,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     sort_newest: 'NEWEST FIRST',
     sort_oldest: 'OLDEST FIRST',
     sort_best: 'BEST FIRST',
+    popular_tags_label: 'TRENDING TAGS',
     preloader_title: 'ANONLOG',
     preloader_subtitle: 'LOAD MESSAGES',
     next_msg_label: 'NEXT MESSAGE',
@@ -50,6 +62,8 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     admin_badge: 'ADMIN',
     hide_panel_btn: 'HIDE PANEL',
     expand_panel_btn: 'EXPAND PANEL',
+    menu_btn: 'MENU',
+    close_btn: 'CLOSE',
   },
   ru: {
     system_name: 'АНОНЛОГ 1.01 // ВАЙБ НУЛЕВЫХ',
@@ -84,6 +98,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     sort_newest: 'СНАЧАЛА НОВЫЕ',
     sort_oldest: 'СНАЧАЛА СТАРЫЕ',
     sort_best: 'СНАЧАЛА ЛУЧШИЕ',
+    popular_tags_label: 'ПОПУЛЯРНЫЕ ТЕГИ',
     preloader_title: 'АНОНЛОГ',
     preloader_subtitle: 'ЗАГРУЗКА СООБЩЕНИЙ',
     next_msg_label: 'СЛЕД. СООБЩЕНИЕ',
@@ -94,5 +109,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     admin_badge: 'АДМИН',
     hide_panel_btn: 'СКРЫТЬ ПАНЕЛЬ',
     expand_panel_btn: 'РАЗВЕРНУТЬ ПАНЕЛЬ',
+    menu_btn: 'МЕНЮ',
+    close_btn: 'ЗАКРЫТЬ',
   }
 };

@@ -46,6 +46,7 @@ export interface Translations {
   sort_newest: string;
   sort_oldest: string;
   sort_best: string;
+  popular_tags_label: string;
   preloader_title: string;
   preloader_subtitle: string;
   next_msg_label: string;
@@ -58,6 +59,9 @@ export interface Translations {
   // Panel Control
   hide_panel_btn: string;
   expand_panel_btn: string;
+  // Mobile Menu
+  menu_btn: string;
+  close_btn: string;
 }
 
 export interface MessageInputProps {

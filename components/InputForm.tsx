@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TAG_LENGTH } from '../constants';
@@ -49,6 +50,22 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
   useEffect(() => {
       if (replyingTo && shouldFocusOnReply && textareaRef.current) {
           textareaRef.current.focus();
+      }
+      
+      // Inherit tags from parent message
+      if (replyingTo && replyingTo.tags && replyingTo.tags.length > 0) {
+          // Join tags without hashes for input if possible, or just as is. 
+          // The parsing logic handles both. Let's just join them as is.
+          // Note: tags in DB include '#'. 
+          const tagsString = replyingTo.tags.join(', ');
+          setTagInputText(tagsString);
+          setShowTagInput(true);
+      } else {
+          // Don't clear if null, might interrupt user flow if they cancelled manually? 
+          // But usually replyingTo change implies new context.
+          if (!replyingTo) {
+             // Optional: Clear tags on cancel reply? Usually better to leave them if user typed them.
+          }
       }
   }, [replyingTo, shouldFocusOnReply]);
 

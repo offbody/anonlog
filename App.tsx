@@ -13,9 +13,10 @@ import { IllustrationSender } from './components/IllustrationSender';
 import { IllustrationReceiver } from './components/IllustrationReceiver';
 import { ScrollToTop } from './components/ScrollToTop';
 import { AdminLogin } from './components/AdminLogin';
+import { PopularTags } from './components/PopularTags';
 import { useMessages } from './hooks/useMessages';
 import { Message, Language } from './types';
-import { TRANSLATIONS } from './constants';
+import { TRANSLATIONS, PREDEFINED_TAGS } from './constants';
 import { auth } from './firebaseConfig';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -27,6 +28,21 @@ const App: React.FC = () => {
   
   // Panel Visibility Logic
   const [isPanelHidden, setIsPanelHidden] = useState(false);
+  
+  // Mobile Menu State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isSearchMode, setIsSearchMode] = useState(false); // Mobile Search Mode
+
+  // Track Screen Size
+  useEffect(() => {
+      const checkMobile = () => {
+          setIsMobile(window.innerWidth < 640);
+      };
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   
   // Admin Logic (Secure)
   const [isAdmin, setIsAdmin] = useState(false);
@@ -176,6 +192,37 @@ const App: React.FC = () => {
     });
   }, [messages, searchQuery]);
 
+  // Calculate Popular Tags (Merging Dynamic + Predefined)
+  const popularTags = useMemo(() => {
+      const counts: Record<string, number> = {};
+      
+      // 1. Count dynamic tags from messages
+      messages.forEach(msg => {
+          if (msg.tags) {
+              msg.tags.forEach(tag => {
+                  // Normalize for counting (e.g. #Tag -> #tag)
+                  // We'll keep the original casing in the UI if possible, or lowercase everything
+                  const key = tag.trim(); 
+                  counts[key] = (counts[key] || 0) + 1;
+              });
+          }
+      });
+      
+      // 2. Ensure Predefined tags are in the list (even if count is 0)
+      // Note: Predefined tags don't have '#', so we check against that
+      PREDEFINED_TAGS.forEach(preTag => {
+          const keyWithHash = '#' + preTag;
+          if (!counts[keyWithHash]) {
+              counts[keyWithHash] = 0;
+          }
+      });
+      
+      return Object.entries(counts)
+          .sort(([, countA], [, countB]) => countB - countA)
+          .map(([tag, count]) => ({ tag, count }));
+      // Removed slice to show all predefined + dynamic
+  }, [messages]);
+
   const handleSendMessage = (content: string, manualTags?: string[]) => {
       const now = Date.now();
       const timeSinceLast = now - lastSentTime.current;
@@ -191,8 +238,13 @@ const App: React.FC = () => {
   };
 
   const handleTagClick = (tag: string) => {
-      setSearchQuery(tag);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // If clicking same tag, clear search. Else set tag.
+      if (searchQuery === tag) {
+          setSearchQuery('');
+      } else {
+          setSearchQuery(tag);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
   };
 
   // RENDER GOD MODE LOGIN
@@ -206,17 +258,58 @@ const App: React.FC = () => {
       <Preloader isVisible={isLoading} t={t} />
       
       <StickyHeader 
-        isVisible={showStickyInput}
+        isVisible={showStickyInput && !isMobile}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         userId={userId}
         t={t}
       />
       
+      {/* MOBILE BURGER MENU OVERLAY */}
+      {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-[60] bg-white dark:bg-[#111111] p-6 flex flex-col animate-fade-in">
+              <div className="flex justify-end mb-12">
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)} 
+                    className="p-2 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                  >
+                      {/* Close Icon */}
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                  </button>
+              </div>
+              
+              <div className="flex flex-col gap-8 items-center justify-center flex-1">
+                  <div className="scale-150">
+                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
+                  </div>
+                  <div className="scale-150">
+                    <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
+                  </div>
+                  
+                  <div className="w-16 h-[1px] bg-black/20 dark:bg-white/20 my-4"></div>
+                  
+                  <div className="text-center flex flex-col gap-4">
+                      <span className="text-lg font-bold uppercase tracking-widest">{t.system_name}</span>
+                      <div className="flex justify-center">
+                        <IdentityWidget userId={userId} t={t} />
+                      </div>
+                  </div>
+                  
+                  {isAdmin && (
+                    <button onClick={handleAdminLogout} className="mt-8 text-sm font-bold bg-red-500 text-white px-4 py-2 hover:bg-red-600 uppercase tracking-widest">
+                        {t.logout_btn}
+                    </button>
+                  )}
+              </div>
+          </div>
+      )}
+
       <div className="min-h-screen w-full transition-colors duration-300 pb-24 bg-white dark:bg-[#111111] text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
-        <div className="w-full max-w-[1600px] mx-auto p-6 sm:p-12">
+        <div className="w-full max-w-[1600px] mx-auto px-6 sm:p-12 pt-6">
           
-          <header className="mb-12 w-full">
+          <header className="mb-8 lg:mb-12 w-full">
              {/* DESKTOP & TABLET LANDSCAPE */}
              <div className="hidden lg:flex items-center justify-between h-10 gap-4">
                 <div className="flex-1 flex justify-start items-center gap-8">
@@ -224,26 +317,26 @@ const App: React.FC = () => {
                    
                    {/* DESKTOP SEARCH IN HEADER */}
                    <div className="flex items-center gap-4">
-                      <span className="text-xs font-bold uppercase tracking-widest text-black dark:text-white whitespace-nowrap hidden xl:inline-block">
-                          {t.search_label}
-                      </span>
-                      <div className="relative w-48 xl:w-64 group">
-                          <input 
-                            type="text" 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder={t.search_placeholder}
-                            className="w-full bg-transparent border-b border-black/20 dark:border-white/20 py-1 text-sm font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
-                          />
-                          {searchQuery && (
-                            <button 
-                                onClick={() => setSearchQuery('')}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-gray-400 hover:text-black dark:hover:text-white"
-                            >
-                                X
-                            </button>
-                          )}
-                      </div>
+                        <span className="text-sm font-bold uppercase tracking-widest text-black dark:text-white whitespace-nowrap">
+                            {t.search_label}
+                        </span>
+                        <div className="relative w-64 group">
+                            <input 
+                                type="text" 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={t.search_placeholder}
+                                className="w-full bg-transparent border-b border-black/20 dark:border-white/20 py-1 text-sm font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                            />
+                            {searchQuery && (
+                                <button 
+                                    onClick={() => setSearchQuery('')}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-gray-400 hover:text-black dark:hover:text-white"
+                                >
+                                    X
+                                </button>
+                            )}
+                        </div>
                    </div>
                 </div>
                 <div className="shrink-0 flex gap-4">
@@ -287,27 +380,83 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* MOBILE PORTRAIT */}
+            {/* MOBILE PORTRAIT (Redesigned with Search Toggle and Theme Toggle) */}
             <div className="flex sm:hidden flex-col gap-6">
-                <div className="flex items-center justify-between w-full">
-                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
-                    <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
-                </div>
-                <div className="flex justify-center items-center gap-2 w-full">
+                {isSearchMode ? (
+                    /* SEARCH MODE HEADER */
+                    <div className="flex items-center gap-3 w-full border-b border-black dark:border-white pb-2 h-10 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 shrink-0">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                        <input 
+                            autoFocus
+                            type="text" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={t.search_placeholder_short}
+                            className="flex-1 bg-transparent text-base font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none"
+                        />
+                        <button 
+                            onClick={() => {
+                                if (searchQuery) setSearchQuery('');
+                                else setIsSearchMode(false);
+                            }}
+                            className="text-xs font-bold uppercase tracking-widest shrink-0"
+                        >
+                            {searchQuery ? t.search_clear : (
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            )}
+                        </button>
+                    </div>
+                ) : (
+                    /* DEFAULT HEADER */
+                    <div className="flex items-center justify-between w-full h-10">
+                        <IdentityWidget userId={userId} t={t} compact={true} />
+                        <div className="flex items-center gap-5">
+                            {/* Compact Theme Toggle */}
+                            <button 
+                                onClick={toggleTheme}
+                                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black dark:text-white hover:opacity-70 transition-opacity"
+                            >
+                                <span>[{isDark ? t.theme_dark : t.theme_light}]</span>
+                                {isDark ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                                    </svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                                    </svg>
+                                )}
+                            </button>
+
+                            <button onClick={() => setIsSearchMode(true)} className="p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                </svg>
+                            </button>
+                            <button 
+                                onClick={() => setIsMobileMenuOpen(true)}
+                                className="border border-black dark:border-white px-3 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                            >
+                                {/* Burger Icon */}
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
+                
+                <div className="flex justify-center items-center w-full">
                     <a 
                       href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black text-center leading-relaxed"
+                      className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
                     >
                       {t.system_name}
                     </a>
-                    {isAdmin && (
-                        <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 py-1 hover:bg-red-600">
-                            [X]
-                        </button>
-                    )}
-                </div>
-                <div className="flex justify-center w-full">
-                    <IdentityWidget userId={userId} t={t} />
                 </div>
             </div>
           </header>
@@ -315,7 +464,7 @@ const App: React.FC = () => {
           <div className="flex flex-col gap-16">
             <section ref={inputSectionRef} className="w-full mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-4 lg:gap-8">
                
-               {/* Left Illustration: Hidden if panel is hidden */}
+               {/* Left Illustration: Hidden on mobile or if panel is hidden */}
                {!isPanelHidden && (
                    <div className="hidden lg:block flex-1 min-w-0">
                       <IllustrationSender />
@@ -324,13 +473,9 @@ const App: React.FC = () => {
 
                <div className={`w-full ${isPanelHidden ? 'w-full' : 'max-w-md'} mx-auto lg:mx-0 flex flex-col gap-6 shrink-0 z-10 transition-all duration-300`}>
                  
-                 {/* Main Search Bar: VISIBLE ONLY ON MOBILE/TABLET */}
-                 <div className="w-full lg:hidden">
-                    <SearchBar value={searchQuery} onChange={setSearchQuery} t={t} />
-                 </div>
-                 
-                 {/* Input Form: Hidden if panel is hidden */}
-                 {!isPanelHidden && (
+                 {/* Input Form: Hidden if panel is hidden OR ON MOBILE */}
+                 {/* On Mobile, we hide this and rely on StickyInput */}
+                 <div className={`flex-col gap-6 ${isPanelHidden ? 'hidden' : 'hidden sm:flex'}`}>
                      <InputForm 
                         onSendMessage={handleSendMessage} 
                         replyingTo={replyingTo}
@@ -339,12 +484,12 @@ const App: React.FC = () => {
                         cooldownRemaining={cooldownRemaining}
                         t={t}
                      />
-                 )}
+                 </div>
 
-                 {/* Panel Toggle Button */}
+                 {/* Panel Toggle Button - Hidden on Mobile */}
                  <button 
                     onClick={() => setIsPanelHidden(!isPanelHidden)}
-                    className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center justify-center gap-2 py-2 border-y border-transparent hover:border-black/5 dark:hover:border-white/5"
+                    className="hidden sm:flex w-full text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors items-center justify-center gap-2 py-2 border-y border-transparent hover:border-black/5 dark:hover:border-white/5"
                  >
                     {isPanelHidden ? (
                         <>
@@ -364,7 +509,7 @@ const App: React.FC = () => {
                  </button>
                </div>
 
-               {/* Right Illustration: Hidden if panel is hidden */}
+               {/* Right Illustration: Hidden on mobile or if panel is hidden */}
                {!isPanelHidden && (
                    <div className="hidden lg:block flex-1 min-w-0">
                       <IllustrationReceiver />
@@ -373,6 +518,13 @@ const App: React.FC = () => {
             </section>
 
             <main className="w-full max-w-[1600px] mx-auto">
+              <PopularTags tags={popularTags} onTagClick={handleTagClick} activeTag={searchQuery} t={t} />
+              
+              {/* TABLET SEARCH BAR (Hidden on Mobile due to header search, hidden on Desktop due to header search) */}
+              <div className="w-full hidden sm:block lg:hidden mb-8">
+                  <SearchBar value={searchQuery} onChange={setSearchQuery} t={t} />
+              </div>
+              
               <MessageList 
                   messages={filteredMessages} 
                   allMessagesRaw={messages}
@@ -399,10 +551,10 @@ const App: React.FC = () => {
 
         <ScrollToTop />
 
-        {/* Sticky Input: Visible on scroll OR if panel is hidden */}
+        {/* Sticky Input: Visible on scroll OR if panel is hidden OR ALWAYS ON MOBILE */}
         <StickyInput 
           onSendMessage={handleSendMessage} 
-          isVisible={showStickyInput || isPanelHidden} 
+          isVisible={showStickyInput || isPanelHidden || isMobile} 
           replyingTo={replyingTo}
           onCancelReply={() => setReplyingTo(null)}
           cooldownRemaining={cooldownRemaining}

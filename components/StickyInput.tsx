@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StickyInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TAG_LENGTH } from '../constants';
@@ -41,6 +42,13 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
   useEffect(() => {
       if (isVisible && replyingTo && inputRef.current) {
           inputRef.current.focus();
+      }
+
+      // Inherit tags
+      if (replyingTo && replyingTo.tags && replyingTo.tags.length > 0) {
+          const tagsString = replyingTo.tags.join(', ');
+          setTagInputText(tagsString);
+          setShowTagInput(true);
       }
   }, [isVisible, replyingTo]);
 
@@ -115,8 +123,8 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
           </div>
        )}
 
-       <form onSubmit={handleSubmit} className="w-full border-t border-black/10 dark:border-white/10 px-4 py-3 flex items-center gap-4">
-          
+       <div className="w-full border-t border-black/10 dark:border-white/10 px-4 py-3 flex items-center gap-4 bg-white/95 dark:bg-[#111111]/95 backdrop-blur-md">
+       <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-4">
           {/* Toggle Tags Button */}
           {!showTagInput && (
              <button
@@ -179,6 +187,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
             )}
           </button>
        </form>
+       </div>
     </div>
   );
 };
