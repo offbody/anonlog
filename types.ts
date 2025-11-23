@@ -55,6 +55,9 @@ export interface Translations {
   logout_btn: string;
   block_btn: string;
   admin_badge: string;
+  // Panel Control
+  hide_panel_btn: string;
+  expand_panel_btn: string;
 }
 
 export interface MessageInputProps {

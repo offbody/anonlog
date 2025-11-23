@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { MessageList } from './components/MessageList';
@@ -23,6 +24,9 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showStickyInput, setShowStickyInput] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  
+  // Panel Visibility Logic
+  const [isPanelHidden, setIsPanelHidden] = useState(false);
   
   // Admin Logic (Secure)
   const [isAdmin, setIsAdmin] = useState(false);
@@ -215,8 +219,32 @@ const App: React.FC = () => {
           <header className="mb-12 w-full">
              {/* DESKTOP & TABLET LANDSCAPE */}
              <div className="hidden lg:flex items-center justify-between h-10 gap-4">
-                <div className="flex-1 flex justify-start">
+                <div className="flex-1 flex justify-start items-center gap-8">
                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
+                   
+                   {/* DESKTOP SEARCH IN HEADER */}
+                   <div className="flex items-center gap-4">
+                      <span className="text-xs font-bold uppercase tracking-widest text-black dark:text-white whitespace-nowrap hidden xl:inline-block">
+                          {t.search_label}
+                      </span>
+                      <div className="relative w-48 xl:w-64 group">
+                          <input 
+                            type="text" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder={t.search_placeholder}
+                            className="w-full bg-transparent border-b border-black/20 dark:border-white/20 py-1 text-sm font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                          />
+                          {searchQuery && (
+                            <button 
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-gray-400 hover:text-black dark:hover:text-white"
+                            >
+                                X
+                            </button>
+                          )}
+                      </div>
+                   </div>
                 </div>
                 <div className="shrink-0 flex gap-4">
                     <a 
@@ -286,25 +314,62 @@ const App: React.FC = () => {
 
           <div className="flex flex-col gap-16">
             <section ref={inputSectionRef} className="w-full mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-4 lg:gap-8">
-               <div className="hidden lg:block flex-1 min-w-0">
-                  <IllustrationSender />
+               
+               {/* Left Illustration: Hidden if panel is hidden */}
+               {!isPanelHidden && (
+                   <div className="hidden lg:block flex-1 min-w-0">
+                      <IllustrationSender />
+                   </div>
+               )}
+
+               <div className={`w-full ${isPanelHidden ? 'w-full' : 'max-w-md'} mx-auto lg:mx-0 flex flex-col gap-6 shrink-0 z-10 transition-all duration-300`}>
+                 
+                 {/* Main Search Bar: VISIBLE ONLY ON MOBILE/TABLET */}
+                 <div className="w-full lg:hidden">
+                    <SearchBar value={searchQuery} onChange={setSearchQuery} t={t} />
+                 </div>
+                 
+                 {/* Input Form: Hidden if panel is hidden */}
+                 {!isPanelHidden && (
+                     <InputForm 
+                        onSendMessage={handleSendMessage} 
+                        replyingTo={replyingTo}
+                        onCancelReply={() => setReplyingTo(null)}
+                        shouldFocusOnReply={!showStickyInput}
+                        cooldownRemaining={cooldownRemaining}
+                        t={t}
+                     />
+                 )}
+
+                 {/* Panel Toggle Button */}
+                 <button 
+                    onClick={() => setIsPanelHidden(!isPanelHidden)}
+                    className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors flex items-center justify-center gap-2 py-2 border-y border-transparent hover:border-black/5 dark:hover:border-white/5"
+                 >
+                    {isPanelHidden ? (
+                        <>
+                            <span>{t.expand_panel_btn}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                            </svg>
+                        </>
+                    ) : (
+                        <>
+                            <span>{t.hide_panel_btn}</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                            </svg>
+                        </>
+                    )}
+                 </button>
                </div>
 
-               <div className="w-full max-w-md mx-auto lg:mx-0 flex flex-col gap-8 shrink-0 z-10">
-                 <SearchBar value={searchQuery} onChange={setSearchQuery} t={t} />
-                 <InputForm 
-                    onSendMessage={handleSendMessage} 
-                    replyingTo={replyingTo}
-                    onCancelReply={() => setReplyingTo(null)}
-                    shouldFocusOnReply={!showStickyInput}
-                    cooldownRemaining={cooldownRemaining}
-                    t={t}
-                 />
-               </div>
-
-               <div className="hidden lg:block flex-1 min-w-0">
-                  <IllustrationReceiver />
-               </div>
+               {/* Right Illustration: Hidden if panel is hidden */}
+               {!isPanelHidden && (
+                   <div className="hidden lg:block flex-1 min-w-0">
+                      <IllustrationReceiver />
+                   </div>
+               )}
             </section>
 
             <main className="w-full max-w-[1600px] mx-auto">
@@ -334,9 +399,10 @@ const App: React.FC = () => {
 
         <ScrollToTop />
 
+        {/* Sticky Input: Visible on scroll OR if panel is hidden */}
         <StickyInput 
           onSendMessage={handleSendMessage} 
-          isVisible={showStickyInput} 
+          isVisible={showStickyInput || isPanelHidden} 
           replyingTo={replyingTo}
           onCancelReply={() => setReplyingTo(null)}
           cooldownRemaining={cooldownRemaining}
