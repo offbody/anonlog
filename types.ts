@@ -44,8 +44,11 @@ export interface Translations {
   add_tag_btn: string;
   tags_placeholder: string;
   sort_newest: string;
+  sort_newest_short: string;
   sort_oldest: string;
+  sort_oldest_short: string;
   sort_best: string;
+  sort_best_short: string;
   popular_tags_label: string;
   preloader_title: string;
   preloader_subtitle: string;
@@ -62,6 +65,8 @@ export interface Translations {
   // Mobile Menu
   menu_btn: string;
   close_btn: string;
+  mobile_footer_text_1: string;
+  mobile_footer_text_2: string;
 }
 
 export interface MessageInputProps {

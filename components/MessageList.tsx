@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { MessageListProps, Message } from '../types';
 import { MessageItem } from './MessageItem';
@@ -136,21 +135,24 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                 onClick={() => setSortOrder('oldest')}
                 className={`transition-colors whitespace-nowrap ${sortOrder === 'oldest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
             >
-                {t.sort_oldest}
+                <span className="lg:hidden">{t.sort_oldest_short}</span>
+                <span className="hidden lg:inline">{t.sort_oldest}</span>
             </button>
             <span className="opacity-30 text-black dark:text-white">//</span>
             <button 
                 onClick={() => setSortOrder('newest')}
                 className={`transition-colors whitespace-nowrap ${sortOrder === 'newest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
             >
-                {t.sort_newest}
+                <span className="lg:hidden">{t.sort_newest_short}</span>
+                <span className="hidden lg:inline">{t.sort_newest}</span>
             </button>
             <span className="opacity-30 text-black dark:text-white">//</span>
             <button 
                 onClick={() => setSortOrder('best')}
                 className={`transition-colors whitespace-nowrap ${sortOrder === 'best' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
             >
-                {t.sort_best}
+                <span className="lg:hidden">{t.sort_best_short}</span>
+                <span className="hidden lg:inline">{t.sort_best}</span>
             </button>
          </div>
       </div>

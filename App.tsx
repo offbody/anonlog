@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { InputForm } from './components/InputForm';
 import { MessageList } from './components/MessageList';
@@ -34,10 +33,10 @@ const App: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false); // Mobile Search Mode
 
-  // Track Screen Size
+  // Track Screen Size - Breakpoint set to 768px (md) to handle landscape phones as mobile
   useEffect(() => {
       const checkMobile = () => {
-          setIsMobile(window.innerWidth < 640);
+          setIsMobile(window.innerWidth < 768);
       };
       checkMobile();
       window.addEventListener('resize', checkMobile);
@@ -257,8 +256,9 @@ const App: React.FC = () => {
     <>
       <Preloader isVisible={isLoading} t={t} />
       
+      {/* Sticky Header - Enabled on ALL devices when scrolled */}
       <StickyHeader 
-        isVisible={showStickyInput && !isMobile}
+        isVisible={showStickyInput} 
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         userId={userId}
@@ -267,41 +267,52 @@ const App: React.FC = () => {
       
       {/* MOBILE BURGER MENU OVERLAY */}
       {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-[60] bg-white dark:bg-[#111111] p-6 flex flex-col animate-fade-in">
-              <div className="flex justify-end mb-12">
+          <div className="fixed inset-0 z-[60] bg-white dark:bg-[#111111] p-6 flex flex-col font-mono">
+              <div className="flex justify-end mb-8">
                   <button 
                     onClick={() => setIsMobileMenuOpen(false)} 
-                    className="p-2 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                    className="p-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
                   >
-                      {/* Close Icon */}
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                      {/* Close Icon - Sized exactly like the Burger icon (w-5 h-5) */}
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                       </svg>
                   </button>
               </div>
               
-              <div className="flex flex-col gap-8 items-center justify-center flex-1">
-                  <div className="scale-150">
-                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
-                  </div>
-                  <div className="scale-150">
-                    <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
-                  </div>
+              <div className="flex flex-col gap-6 items-center justify-center flex-1 w-full max-w-sm mx-auto">
                   
-                  <div className="w-16 h-[1px] bg-black/20 dark:bg-white/20 my-4"></div>
-                  
-                  <div className="text-center flex flex-col gap-4">
-                      <span className="text-lg font-bold uppercase tracking-widest">{t.system_name}</span>
-                      <div className="flex justify-center">
+                  {/* 1. Identity Block (TOP) */}
+                  <div className="w-full border border-dashed border-black/30 dark:border-white/30 p-6 flex flex-col items-center gap-4">
+                      <span className="text-xs font-bold uppercase tracking-widest opacity-50">{t.system_name}</span>
+                      <div className="scale-125">
                         <IdentityWidget userId={userId} t={t} />
                       </div>
                   </div>
+
+                  <div className="w-full h-[1px] bg-black/10 dark:bg-white/10 my-2"></div>
+                  
+                  {/* 2. Language Toggle Styled Button (BOTTOM) */}
+                  <button 
+                      onClick={toggleLanguage}
+                      className="w-full border border-black dark:border-white p-4 flex items-center justify-center gap-4 text-lg font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                  >
+                      <span className={language === 'ru' ? "opacity-100" : "opacity-30"}>RU</span>
+                      <span className="opacity-30">//</span>
+                      <span className={language === 'en' ? "opacity-100" : "opacity-30"}>EN</span>
+                  </button>
                   
                   {isAdmin && (
-                    <button onClick={handleAdminLogout} className="mt-8 text-sm font-bold bg-red-500 text-white px-4 py-2 hover:bg-red-600 uppercase tracking-widest">
+                    <button onClick={handleAdminLogout} className="w-full mt-4 text-sm font-bold bg-red-500 text-white p-4 hover:bg-red-600 uppercase tracking-widest border border-red-600">
                         {t.logout_btn}
                     </button>
                   )}
+              </div>
+
+              {/* Copyright Footer */}
+              <div className="mt-auto pt-8 text-center opacity-40 text-[10px] uppercase tracking-widest leading-relaxed">
+                  <p>{t.mobile_footer_text_1}</p>
+                  <p>{t.mobile_footer_text_2}</p>
               </div>
           </div>
       )}
@@ -309,8 +320,9 @@ const App: React.FC = () => {
       <div className="min-h-screen w-full transition-colors duration-300 pb-24 bg-white dark:bg-[#111111] text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
         <div className="w-full max-w-[1600px] mx-auto px-6 sm:p-12 pt-6">
           
-          <header className="mb-8 lg:mb-12 w-full">
-             {/* DESKTOP & TABLET LANDSCAPE */}
+          {/* Header - Uses 'md' breakpoint to force mobile layout on landscape phones */}
+          <header className="mb-2 md:mb-8 w-full">
+             {/* DESKTOP (Large screens > 1024px) */}
              <div className="hidden lg:flex items-center justify-between h-10 gap-4">
                 <div className="flex-1 flex justify-start items-center gap-8">
                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
@@ -358,8 +370,8 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-             {/* TABLET PORTRAIT / MOBILE LANDSCAPE */}
-            <div className="hidden sm:flex lg:hidden flex-col gap-6">
+             {/* TABLET PORTRAIT (Between 768px and 1024px) */}
+            <div className="hidden md:flex lg:hidden flex-col gap-6">
                 <div className="flex items-center justify-between w-full">
                     <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
                     <IdentityWidget userId={userId} t={t} />
@@ -380,8 +392,8 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* MOBILE PORTRAIT (Redesigned with Search Toggle and Theme Toggle) */}
-            <div className="flex sm:hidden flex-col gap-6">
+            {/* MOBILE PORTRAIT & LANDSCAPE PHONES (< 768px) */}
+            <div className="flex md:hidden flex-col gap-6">
                 {isSearchMode ? (
                     /* SEARCH MODE HEADER */
                     <div className="flex items-center gap-3 w-full border-b border-black dark:border-white pb-2 h-10 transition-all">
@@ -411,10 +423,23 @@ const App: React.FC = () => {
                         </button>
                     </div>
                 ) : (
-                    /* DEFAULT HEADER */
-                    <div className="flex items-center justify-between w-full h-10">
+                    /* DEFAULT MOBILE HEADER */
+                    <div className="flex items-center justify-between w-full h-10 relative">
+                        {/* Top Left: Identity */}
                         <IdentityWidget userId={userId} t={t} compact={true} />
-                        <div className="flex items-center gap-5">
+                        
+                        {/* Landscape Mobile Logo (Visible only on SM screens (landscape phone), centered absolutely) */}
+                        <div className="hidden sm:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <a 
+                              href="/"
+                              className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                            >
+                              {t.system_name}
+                            </a>
+                        </div>
+                        
+                        {/* Top Right: Theme, Search, Menu */}
+                        <div className="flex items-center gap-3">
                             {/* Compact Theme Toggle */}
                             <button 
                                 onClick={toggleTheme}
@@ -439,7 +464,7 @@ const App: React.FC = () => {
                             </button>
                             <button 
                                 onClick={() => setIsMobileMenuOpen(true)}
-                                className="border border-black dark:border-white px-3 py-2 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                                className="p-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
                             >
                                 {/* Burger Icon */}
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -450,21 +475,25 @@ const App: React.FC = () => {
                     </div>
                 )}
                 
-                <div className="flex justify-center items-center w-full">
-                    <a 
-                      href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
-                    >
-                      {t.system_name}
-                    </a>
-                </div>
+                {/* Bottom Center: Logo (Visible ONLY on Portrait Mobile) */}
+                {!isSearchMode && (
+                    <div className="flex sm:hidden justify-center items-center w-full">
+                        <a 
+                        href="/"
+                        className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                        >
+                        {t.system_name}
+                        </a>
+                    </div>
+                )}
             </div>
           </header>
 
-          <div className="flex flex-col gap-16">
+          {/* Main Content - Tight gap on ALL mobile/landscape phone screens (gap-1 up to md, then gap-16) */}
+          <div className="flex flex-col gap-1 md:gap-16">
             <section ref={inputSectionRef} className="w-full mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-4 lg:gap-8">
                
-               {/* Left Illustration: Hidden on mobile or if panel is hidden */}
+               {/* Left Illustration: Hidden on mobile (< md) or if panel is hidden */}
                {!isPanelHidden && (
                    <div className="hidden lg:block flex-1 min-w-0">
                       <IllustrationSender />
@@ -473,9 +502,9 @@ const App: React.FC = () => {
 
                <div className={`w-full ${isPanelHidden ? 'w-full' : 'max-w-md'} mx-auto lg:mx-0 flex flex-col gap-6 shrink-0 z-10 transition-all duration-300`}>
                  
-                 {/* Input Form: Hidden if panel is hidden OR ON MOBILE */}
-                 {/* On Mobile, we hide this and rely on StickyInput */}
-                 <div className={`flex-col gap-6 ${isPanelHidden ? 'hidden' : 'hidden sm:flex'}`}>
+                 {/* Input Form: Hidden if panel is hidden OR ON MOBILE (< md) */}
+                 {/* On Mobile/Landscape, we hide this and rely on StickyInput */}
+                 <div className={`flex-col gap-6 ${isPanelHidden ? 'hidden' : 'hidden md:flex'}`}>
                      <InputForm 
                         onSendMessage={handleSendMessage} 
                         replyingTo={replyingTo}
@@ -489,7 +518,7 @@ const App: React.FC = () => {
                  {/* Panel Toggle Button - Hidden on Mobile */}
                  <button 
                     onClick={() => setIsPanelHidden(!isPanelHidden)}
-                    className="hidden sm:flex w-full text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors items-center justify-center gap-2 py-2 border-y border-transparent hover:border-black/5 dark:hover:border-white/5"
+                    className="hidden md:flex w-full text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors items-center justify-center gap-2 py-2 border-y border-transparent hover:border-black/5 dark:hover:border-white/5"
                  >
                     {isPanelHidden ? (
                         <>
@@ -517,11 +546,11 @@ const App: React.FC = () => {
                )}
             </section>
 
-            <main className="w-full max-w-[1600px] mx-auto">
+            <main className="w-full max-w-[1600px] mx-auto mt-2 sm:mt-0">
               <PopularTags tags={popularTags} onTagClick={handleTagClick} activeTag={searchQuery} t={t} />
               
               {/* TABLET SEARCH BAR (Hidden on Mobile due to header search, hidden on Desktop due to header search) */}
-              <div className="w-full hidden sm:block lg:hidden mb-8">
+              <div className="w-full hidden md:block lg:hidden mb-8">
                   <SearchBar value={searchQuery} onChange={setSearchQuery} t={t} />
               </div>
               
@@ -551,7 +580,7 @@ const App: React.FC = () => {
 
         <ScrollToTop />
 
-        {/* Sticky Input: Visible on scroll OR if panel is hidden OR ALWAYS ON MOBILE */}
+        {/* Sticky Input: Visible on scroll OR if panel is hidden OR ALWAYS ON MOBILE (< md) */}
         <StickyInput 
           onSendMessage={handleSendMessage} 
           isVisible={showStickyInput || isPanelHidden || isMobile} 

@@ -21,8 +21,8 @@ export const PopularTags: React.FC<PopularTagsProps> = ({ tags, onTagClick, acti
          <div className="h-[1px] w-full bg-black/10 dark:bg-white/10"></div>
       </div>
       
-      {/* Layout change: nowrap + scroll for mobile with negative margins for edge-to-edge effect */}
-      <div className="flex flex-nowrap overflow-x-auto sm:flex-wrap gap-2 pb-2 sm:pb-0 no-scrollbar -mx-6 px-6 sm:mx-0 sm:px-0">
+      {/* Layout change: nowrap + scroll for mobile (< md), grid for md+. Negative margins for edge-to-edge effect on small screens. */}
+      <div className="flex flex-nowrap overflow-x-auto md:flex-wrap gap-2 pb-2 md:pb-0 no-scrollbar -mx-6 px-6 md:mx-0 md:px-0">
          {tags.map((item, idx) => {
              const isActive = activeTag.toLowerCase() === item.tag.toLowerCase() || activeTag.toLowerCase().includes(item.tag.toLowerCase());
              return (
