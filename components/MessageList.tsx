@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { MessageListProps, Message } from '../types';
 import { MessageItem } from './MessageItem';
 import { LAST_READ_KEY } from '../constants';
@@ -10,11 +10,61 @@ type SortOrder = 'newest' | 'oldest' | 'best';
 export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, onVote, highlightedMessageId, allMessagesRaw, isAdmin, t, locale }) => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('oldest');
+  
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+  
+  // Refs to track if user is currently near the edge of the screen
+  const isNearBottomRef = useRef(true);
+  const isNearTopRef = useRef(true);
 
   const [lastReadTime, setLastReadTime] = useState<number>(() => {
       const stored = localStorage.getItem(LAST_READ_KEY);
       return stored ? parseInt(stored, 10) : Date.now();
   });
+
+  // Track scroll position to decide whether to auto-scroll later
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const fullHeight = document.documentElement.scrollHeight;
+
+      // User is near bottom if distance to bottom is less than 200px
+      isNearBottomRef.current = (scrollTop + windowHeight) >= (fullHeight - 200);
+      
+      // User is near top if scrollTop is less than 200px
+      isNearTopRef.current = scrollTop < 200;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial position
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Conditional Auto-scroll logic
+  useEffect(() => {
+    // Allow a brief delay for DOM to update height
+    const timer = setTimeout(() => {
+        // If sorting by OLDEST (Chronological)
+        if (sortOrder === 'oldest') {
+            // Only scroll to bottom if user was ALREADY near bottom
+            if (isNearBottomRef.current && bottomRef.current) {
+                bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        } 
+        // If sorting by NEWEST (Reverse Chronological)
+        else if (sortOrder === 'newest') {
+            // Only scroll to top if user was ALREADY near top
+            if (isNearTopRef.current && topRef.current) {
+                topRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [messages, sortOrder]);
 
   const allMyDialogs = useMemo(() => {
     const raw = allMessagesRaw || messages;
@@ -168,6 +218,9 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
         </div>
       ) : (
         <div className="flex flex-col gap-4">
+            {/* Auto-scroll anchor for TOP */}
+            <div ref={topRef} />
+            
             {filteredMessages.map((msg) => {
                 const { seq, senderId } = getParentInfo(msg.parentId);
                 return (
@@ -191,6 +244,9 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                     />
                 );
             })}
+            
+            {/* Auto-scroll anchor for BOTTOM */}
+            <div ref={bottomRef} />
         </div>
       )}
     </div>

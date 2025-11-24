@@ -1,21 +1,30 @@
+
 import React, { useState, useEffect } from 'react';
 
 export const ScrollToTop: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [showTop, setShowTop] = useState(false);
+  const [showBottom, setShowBottom] = useState(false);
 
   useEffect(() => {
-    const toggleVisibility = () => {
-      // Show button when page is scrolled down 500px
-      if (window.scrollY > 500) {
-        setIsVisible(true);
-      } else {
-        setIsVisible(false);
-      }
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const fullHeight = document.documentElement.scrollHeight;
+
+      // Show TOP button if scrolled down more than 500px
+      setShowTop(scrollTop > 500);
+
+      // Show BOTTOM button if not at the very bottom (with 500px buffer)
+      // AND if the page is actually scrollable (content > viewport)
+      const isNearBottom = scrollTop + windowHeight >= fullHeight - 500;
+      setShowBottom(!isNearBottom && fullHeight > windowHeight);
     };
 
-    window.addEventListener('scroll', toggleVisibility);
+    window.addEventListener('scroll', handleScroll);
+    // Check initially
+    handleScroll();
 
-    return () => window.removeEventListener('scroll', toggleVisibility);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToTop = () => {
@@ -25,19 +34,42 @@ export const ScrollToTop: React.FC = () => {
     });
   };
 
+  const scrollToBottom = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
+    });
+  };
+
+  // If neither is visible, render nothing to keep DOM clean
+  if (!showTop && !showBottom) return null;
+
   return (
-    <div 
-      className={`fixed bottom-32 right-4 sm:right-8 z-30 transition-all duration-500 ease-in-out transform ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-      }`}
-    >
+    <div className="fixed bottom-32 right-4 sm:right-8 z-30 flex flex-col gap-3">
+      
+      {/* Scroll To Top */}
       <button
         onClick={scrollToTop}
-        className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white dark:bg-[#0a0a0a] border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors shadow-lg"
+        className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white dark:bg-[#252525] border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-500 shadow-lg ${
+            showTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none absolute'
+        }`}
         aria-label="Scroll to top"
       >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        </svg>
+      </button>
+
+      {/* Scroll To Bottom */}
+      <button
+        onClick={scrollToBottom}
+        className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white dark:bg-[#252525] border border-black dark:border-white text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-500 shadow-lg ${
+            showBottom ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none absolute'
+        }`}
+        aria-label="Scroll to bottom"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
       </button>
     </div>

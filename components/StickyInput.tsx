@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StickyInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TAG_LENGTH } from '../constants';
@@ -74,11 +75,10 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
       setShowTagInput(false);
   };
 
+  // Removed translate-y logic, effectively always visible static
   return (
     <div 
-      className={`fixed bottom-[-1px] left-0 w-full z-50 transform transition-transform duration-300 ease-in-out bg-white/95 dark:bg-[#252525]/95 backdrop-blur-md pb-safe ${
-        isVisible ? 'translate-y-0' : 'translate-y-full'
-      }`}
+      className="fixed bottom-0 left-0 w-full z-50 bg-white/95 dark:bg-[#252525]/95 backdrop-blur-md pb-safe border-t border-black/10 dark:border-white/10"
     >
        {/* Replying Banner for Sticky */}
        {replyingTo && (
@@ -122,7 +122,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
           </div>
        )}
 
-       <div className="w-full border-t border-black/10 dark:border-white/10 px-4 py-3 flex items-center gap-4 bg-white/95 dark:bg-[#252525]/95 backdrop-blur-md">
+       <div className="w-full px-4 py-3 flex items-center gap-4">
        <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-4">
           {/* Toggle Tags Button */}
           {!showTagInput && (

@@ -1,6 +1,5 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { InputForm } from './components/InputForm';
 import { MessageList } from './components/MessageList';
 import { SearchBar } from './components/SearchBar';
 import { StickyInput } from './components/StickyInput';
@@ -9,8 +8,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { LanguageToggle } from './components/LanguageToggle';
 import { Preloader } from './components/Preloader';
 import { IdentityWidget } from './components/IdentityWidget';
-import { IllustrationSender } from './components/IllustrationSender';
-import { IllustrationReceiver } from './components/IllustrationReceiver';
+import { PixelCanvas } from './components/PixelCanvas';
 import { ScrollToTop } from './components/ScrollToTop';
 import { AdminLogin } from './components/AdminLogin';
 import { PopularTags } from './components/PopularTags';
@@ -27,11 +25,11 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const [showStickyInput, setShowStickyInput] = useState(false);
+  // Sticky Input is always visible now
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   
-  // Panel Visibility Logic
-  const [isPanelHidden, setIsPanelHidden] = useState(false);
+  // Scroll State for Sticky Header
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
   
   // Mobile Menu State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -155,23 +153,26 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDark(!isDark);
   
-  const inputSectionRef = useRef<HTMLDivElement>(null);
+  const topSectionRef = useRef<HTMLDivElement>(null);
 
+  // Sticky Header Scroll Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
+        // Show sticky header when the top section (header + canvas) scrolls out of view
+        // But only if we scrolled DOWN (boundingClientRect.top < 0)
         const isScrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-        setShowStickyInput(isScrolledPast);
+        setShowStickyHeader(isScrolledPast);
       },
       {
         root: null,
-        threshold: 0.1,
-        rootMargin: "-50px 0px 0px 0px" 
+        threshold: 0, // Trigger as soon as even 1px is out
+        rootMargin: "-100px 0px 0px 0px" // Add some buffer
       }
     );
 
-    if (inputSectionRef.current) {
-      observer.observe(inputSectionRef.current);
+    if (topSectionRef.current) {
+      observer.observe(topSectionRef.current);
     }
 
     return () => {
@@ -269,9 +270,9 @@ const App: React.FC = () => {
       
       {/* Sticky Header */}
       <StickyHeader 
-        isVisible={showStickyInput} 
+        isVisible={showStickyHeader} 
         searchQuery={searchQuery}
-        onSearchChange={handleSearchChange} // Use new handler
+        onSearchChange={handleSearchChange} 
         userId={userId}
         t={t}
       />
@@ -328,219 +329,178 @@ const App: React.FC = () => {
       <div className="min-h-screen w-full transition-colors duration-300 pb-24 bg-white dark:bg-[#121212] text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
         <div className="w-full max-w-[1600px] mx-auto px-6 sm:p-12 pt-6">
           
-          <header className="mb-2 md:mb-8 lg:mb-8 w-full">
-             {/* DESKTOP */}
-             <div className="hidden lg:flex items-center justify-between h-10 gap-4">
-                <div className="flex-1 flex justify-start items-center gap-8">
-                   <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
-                   
-                   <div className="flex items-center gap-4">
-                        <span className="text-sm font-bold uppercase tracking-widest text-black dark:text-white whitespace-nowrap">
-                            {t.search_label}
-                        </span>
-                        <div className="relative w-64 group">
+          {/* WRAP HEADER + CANVAS IN A REF FOR SCROLL TRACKING */}
+          <div ref={topSectionRef}>
+            <header className="mb-2 md:mb-8 lg:mb-8 w-full">
+                {/* DESKTOP */}
+                <div className="hidden lg:flex items-center justify-between h-10 gap-4">
+                    <div className="flex-1 flex justify-start items-center gap-8">
+                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
+                    
+                    <div className="flex items-center gap-4">
+                            <span className="text-sm font-bold uppercase tracking-widest text-black dark:text-white whitespace-nowrap">
+                                {t.search_label}
+                            </span>
+                            <div className="relative w-64 group">
+                                <input 
+                                    type="text" 
+                                    value={searchQuery}
+                                    onChange={(e) => handleSearchChange(e.target.value)} // Use new handler
+                                    placeholder={t.search_placeholder}
+                                    className="w-full bg-transparent border-b border-black/20 dark:border-white/20 py-1 text-sm font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                                />
+                                {searchQuery && (
+                                    <button 
+                                        onClick={() => handleSearchChange('')}
+                                        className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-gray-400 hover:text-black dark:hover:text-white"
+                                    >
+                                        X
+                                    </button>
+                                )}
+                            </div>
+                    </div>
+                    </div>
+                    <div className="shrink-0 flex gap-4">
+                        <a 
+                        href="/"
+                        className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                        >
+                        {t.system_name}
+                        </a>
+                        {isAdmin && (
+                            <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 hover:bg-red-600">
+                                {t.logout_btn}
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex-1 flex justify-end items-center gap-8">
+                    <IdentityWidget userId={userId} t={t} />
+                    <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
+                    </div>
+                </div>
+
+                {/* TABLET */}
+                <div className="hidden md:flex lg:hidden flex-col gap-6">
+                    <div className="flex items-center justify-between w-full">
+                        <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
+                        <IdentityWidget userId={userId} t={t} />
+                        <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
+                    </div>
+                    <div className="flex justify-center items-center gap-2 w-full">
+                        <a 
+                        href="/"
+                        className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                        >
+                        {t.system_name}
+                        </a>
+                        {isAdmin && (
+                            <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 py-1 hover:bg-red-600">
+                                {t.logout_btn}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* MOBILE HEADER */}
+                <div className="flex md:hidden flex-col gap-2">
+                    {isSearchMode ? (
+                        <div className="flex items-center gap-3 w-full border-b border-black dark:border-white pb-2 h-10 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 shrink-0">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
                             <input 
+                                autoFocus
                                 type="text" 
                                 value={searchQuery}
                                 onChange={(e) => handleSearchChange(e.target.value)} // Use new handler
-                                placeholder={t.search_placeholder}
-                                className="w-full bg-transparent border-b border-black/20 dark:border-white/20 py-1 text-sm font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                                placeholder={t.search_placeholder_short}
+                                className="flex-1 bg-transparent text-base font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none"
                             />
-                            {searchQuery && (
-                                <button 
-                                    onClick={() => handleSearchChange('')}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 text-[10px] font-bold uppercase text-gray-400 hover:text-black dark:hover:text-white"
-                                >
-                                    X
-                                </button>
-                            )}
-                        </div>
-                   </div>
-                </div>
-                <div className="shrink-0 flex gap-4">
-                    <a 
-                      href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
-                    >
-                      {t.system_name}
-                    </a>
-                    {isAdmin && (
-                        <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 hover:bg-red-600">
-                            {t.logout_btn}
-                        </button>
-                    )}
-                </div>
-                <div className="flex-1 flex justify-end items-center gap-8">
-                   <IdentityWidget userId={userId} t={t} />
-                   <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
-                </div>
-            </div>
-
-             {/* TABLET */}
-            <div className="hidden md:flex lg:hidden flex-col gap-6">
-                <div className="flex items-center justify-between w-full">
-                    <LanguageToggle language={language} toggleLanguage={toggleLanguage} />
-                    <IdentityWidget userId={userId} t={t} />
-                    <ThemeToggle isDark={isDark} toggleTheme={toggleTheme} t={t} />
-                </div>
-                <div className="flex justify-center items-center gap-2 w-full">
-                    <a 
-                      href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
-                    >
-                      {t.system_name}
-                    </a>
-                    {isAdmin && (
-                        <button onClick={handleAdminLogout} className="text-xs font-bold bg-red-500 text-white px-2 py-1 hover:bg-red-600">
-                            {t.logout_btn}
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* MOBILE HEADER */}
-            <div className="flex md:hidden flex-col gap-2">
-                {isSearchMode ? (
-                    <div className="flex items-center gap-3 w-full border-b border-black dark:border-white pb-2 h-10 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 shrink-0">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                        </svg>
-                        <input 
-                            autoFocus
-                            type="text" 
-                            value={searchQuery}
-                            onChange={(e) => handleSearchChange(e.target.value)} // Use new handler
-                            placeholder={t.search_placeholder_short}
-                            className="flex-1 bg-transparent text-base font-mono uppercase tracking-widest text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none"
-                        />
-                        <button 
-                            onClick={() => {
-                                if (searchQuery) handleSearchChange('');
-                                else setIsSearchMode(false);
-                            }}
-                            className="text-xs font-bold uppercase tracking-widest shrink-0"
-                        >
-                            {searchQuery ? t.search_clear : (
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            )}
-                        </button>
-                    </div>
-                ) : (
-                    <div className="w-full h-10 flex sm:grid sm:grid-cols-3 items-center justify-between relative">
-                        {/* Left: Identity */}
-                        <div className="flex items-center justify-start">
-                            <IdentityWidget userId={userId} t={t} compact={true} />
-                        </div>
-                        
-                        {/* Center: Logo (Landscape only) */}
-                        <div className="hidden sm:flex items-center justify-center">
-                             <a 
-                              href="/"
-                              className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black leading-none whitespace-nowrap"
-                            >
-                              {t.system_name}
-                            </a>
-                        </div>
-
-                        {/* Right: Icons */}
-                        <div className="flex items-center justify-end gap-3">
                             <button 
-                                onClick={toggleTheme}
-                                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black dark:text-white hover:opacity-70 transition-opacity"
+                                onClick={() => {
+                                    if (searchQuery) handleSearchChange('');
+                                    else setIsSearchMode(false);
+                                }}
+                                className="text-xs font-bold uppercase tracking-widest shrink-0"
                             >
-                                <span>[{isDark ? t.theme_dark : t.theme_light}]</span>
-                                {isDark ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
-                                    </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                                {searchQuery ? t.search_clear : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 )}
                             </button>
-
-                            <button onClick={() => setIsSearchMode(true)} className="p-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                </svg>
-                            </button>
-                            <button 
-                                onClick={() => setIsMobileMenuOpen(true)}
-                                className="p-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                                </svg>
-                            </button>
                         </div>
-                    </div>
-                )}
-                
-                {/* Logo for Mobile Portrait only (< sm) */}
-                <div className="sm:hidden flex justify-center items-center w-full mt-2">
-                    <a 
-                      href="/"
-                      className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap"
-                    >
-                      {t.system_name}
-                    </a>
-                </div>
-            </div>
-          </header>
-
-          <div className="flex flex-col gap-4 md:gap-16">
-            <section ref={inputSectionRef} className="w-full mx-auto flex flex-col lg:flex-row items-stretch justify-center gap-4 lg:gap-8">
-               {!isPanelHidden && (
-                   <div className="hidden lg:block flex-1 min-w-0">
-                      <IllustrationSender />
-                   </div>
-               )}
-
-               <div className={`w-full ${isPanelHidden ? 'w-full' : 'max-w-md'} mx-auto lg:mx-0 flex flex-col gap-6 shrink-0 z-10 transition-all duration-300`}>
-                 <div className={`flex-col gap-6 ${isPanelHidden ? 'hidden' : 'hidden md:flex'}`}>
-                     <InputForm 
-                        onSendMessage={handleSendMessage} 
-                        replyingTo={replyingTo}
-                        onCancelReply={() => setReplyingTo(null)}
-                        shouldFocusOnReply={!showStickyInput}
-                        cooldownRemaining={cooldownRemaining}
-                        t={t}
-                     />
-                 </div>
-
-                 <button 
-                    onClick={() => setIsPanelHidden(!isPanelHidden)}
-                    className="hidden md:flex w-full text-center text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black dark:hover:text-white transition-colors items-center justify-center gap-2 py-2 border-y border-transparent hover:border-black/5 dark:hover:border-white/5"
-                 >
-                    {isPanelHidden ? (
-                        <>
-                            <span>{t.expand_panel_btn}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                            </svg>
-                        </>
                     ) : (
-                        <>
-                            <span>{t.hide_panel_btn}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                            </svg>
-                        </>
+                        <div className="relative w-full h-10 flex sm:grid sm:grid-cols-3 items-center justify-between">
+                            {/* Left: Identity */}
+                            <div className="flex items-center justify-start">
+                                <IdentityWidget userId={userId} t={t} compact={true} />
+                            </div>
+                            
+                            {/* Center: Logo (Landscape only) */}
+                            <div className="hidden sm:flex items-center justify-center">
+                                <a 
+                                href="/"
+                                className="border border-dashed border-black dark:border-white/50 px-3 py-1.5 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black leading-none whitespace-nowrap"
+                                >
+                                {t.system_name}
+                                </a>
+                            </div>
+
+                            {/* Right: Icons */}
+                            <div className="flex items-center justify-end gap-3">
+                                <button 
+                                    onClick={toggleTheme}
+                                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black dark:text-white hover:opacity-70 transition-opacity"
+                                >
+                                    <span>[{isDark ? t.theme_dark : t.theme_light}]</span>
+                                    {isDark ? (
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+                                        </svg>
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                                        </svg>
+                                    )}
+                                </button>
+
+                                <button onClick={() => setIsSearchMode(true)} className="p-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                                    </svg>
+                                </button>
+                                <button 
+                                    onClick={() => setIsMobileMenuOpen(true)}
+                                    className="p-1.5 border border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     )}
-                 </button>
-               </div>
+                    
+                    {/* Logo for Mobile Portrait only (< sm) */}
+                    <div className="sm:hidden flex justify-center items-center w-full mt-2">
+                        <a 
+                        href="/"
+                        className="border border-dashed border-black dark:border-white/50 px-3 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap"
+                        >
+                        {t.system_name}
+                        </a>
+                    </div>
+                </div>
+            </header>
 
-               {!isPanelHidden && (
-                   <div className="hidden lg:block flex-1 min-w-0">
-                      <IllustrationReceiver />
-                   </div>
-               )}
+            {/* HERO: PIXEL CANVAS */}
+            <section className="w-full h-[100px] bg-[#f2f2f2] dark:bg-[#252525] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-4">
+                <PixelCanvas />
             </section>
+          </div>
 
-            <main className="w-full max-w-[1600px] mx-auto">
+          <main className="w-full max-w-[1600px] mx-auto">
               {/* Pass selectedTag as activeTag to PopularTags */}
               <PopularTags tags={popularTags} onTagClick={handleTagClick} activeTag={selectedTag || ''} t={t} />
               
@@ -563,8 +523,7 @@ const App: React.FC = () => {
                   t={t}
                   locale={locale}
               />
-            </main>
-          </div>
+          </main>
           
           <footer className="mt-24 py-6 text-center text-xs uppercase tracking-widest border-t border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400">
             <p>{t.footer}</p>
@@ -576,7 +535,7 @@ const App: React.FC = () => {
 
         <StickyInput 
           onSendMessage={handleSendMessage} 
-          isVisible={showStickyInput || isPanelHidden || isMobile} 
+          isVisible={true} 
           replyingTo={replyingTo}
           onCancelReply={() => setReplyingTo(null)}
           cooldownRemaining={cooldownRemaining}

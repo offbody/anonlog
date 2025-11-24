@@ -232,7 +232,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId
             </div>
         </div>
 
-        {/* 1.5. QUOTE BLOCK (New) */}
+        {/* 1.5. QUOTE BLOCK */}
         {parentContent && (
             <div 
                 onClick={handleScrollToParent}
@@ -259,9 +259,9 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId
             </div>
         )}
 
-        {/* 3. CONTENT SECTION (Regular font weight) */}
+        {/* 3. CONTENT SECTION (Compact font) */}
         <div className="w-full relative pb-16">
-          <p className="text-black dark:text-white text-lg font-normal leading-snug break-words whitespace-pre-wrap">
+          <p className="text-black dark:text-white text-sm sm:text-base font-normal leading-snug break-words whitespace-pre-wrap">
             {renderContent(message.content)}
           </p>
         </div>
