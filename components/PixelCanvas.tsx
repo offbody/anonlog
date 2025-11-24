@@ -56,8 +56,8 @@ export const PixelCanvas: React.FC = () => {
     const initSkyline = (w: number, h: number) => {
         skyline = [];
         
-        // Margins in logical pixels
-        const margin = 8; // Equal margin all around (Top, Bottom, Left, Right)
+        // Margins in logical pixels (Reduced to 4px as requested)
+        const margin = 4; 
         
         // Vertical constraints
         const maxBuildingHeight = h - (margin * 2);
@@ -160,7 +160,7 @@ export const PixelCanvas: React.FC = () => {
         // Very subtle gray for background city
         ctx.fillStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
         
-        const bottomMargin = 8; // Defined margin
+        const bottomMargin = 4; // Defined margin (Reduced to 4px)
 
         skyline.forEach(b => {
             // Draw from bottom margin up
