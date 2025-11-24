@@ -10,6 +10,7 @@ interface Figure {
   timer: number;
   variant: number; // To slightly vary height/style
   chatTimer: number; // Random offset for chat bubbles
+  color: string; // Unique color
 }
 
 export const PixelCanvas: React.FC = () => {
@@ -38,7 +39,20 @@ export const PixelCanvas: React.FC = () => {
     const initFigures = (w: number, h: number) => {
         const count = Math.max(3, Math.floor(w / 25)); // Density adjusted
         figures = [];
+        
+        // PLEASANT PALETTE (Soft, distinct, friendly)
+        const PALETTE = [
+            '#FF6B6B', // Soft Coral
+            '#54A0FF', // Pastel Blue
+            '#1DD1A1', // Soft Green
+            '#FF9F43', // Warm Orange
+            '#5F27CD', // Deep Purple
+            '#FF9FF3', // Light Rose
+        ];
+
         for(let i = 0; i < count; i++) {
+            const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+
             figures.push({
                 x: Math.random() * w,
                 y: h - 2, // Ground level in low-res coords
@@ -47,7 +61,8 @@ export const PixelCanvas: React.FC = () => {
                 state: Math.random() > 0.6 ? 'idle' : 'walk',
                 timer: Math.random() * 200,
                 variant: Math.floor(Math.random() * 3),
-                chatTimer: Math.random() * 10000
+                chatTimer: Math.random() * 10000,
+                color: color
             });
         }
     };
@@ -176,12 +191,8 @@ export const PixelCanvas: React.FC = () => {
     };
 
     const drawFigure = (f: Figure, time: number) => {
-        const isDark = document.documentElement.classList.contains('dark');
-        
-        // 1. Draw Figure (High Contrast)
-        // Light Mode: Black
-        // Dark Mode: White
-        ctx.fillStyle = isDark ? '#FFFFFF' : '#000000';
+        // Set figure color (Pleasant Palette)
+        ctx.fillStyle = f.color;
 
         const animOffset = (f.state === 'walk' && Math.floor(time / 200) % 2 === 0) ? 1 : 0;
         
@@ -230,7 +241,7 @@ export const PixelCanvas: React.FC = () => {
             const cycle = Math.floor((time + f.chatTimer) / 2000) % 3;
             if (cycle === 0) {
                 // Ensure bubble uses same color as figure
-                ctx.fillStyle = isDark ? '#FFFFFF' : '#000000';
+                ctx.fillStyle = f.color;
                 
                 // Reduced Bubble Size (was 11x7)
                 const bw = 9; 
