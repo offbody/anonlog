@@ -172,16 +172,6 @@ export const PixelCanvas: React.FC = () => {
             const by = h - bottomMargin - b.h;
             
             ctx.fillRect(Math.round(b.x), Math.round(by), Math.round(b.w), Math.round(b.h));
-            
-            // Random "windows" (static noise on buildings)
-            if (Math.random() > 0.99) {
-                 // Tiny flicker
-                 const prevFill = ctx.fillStyle;
-                 ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)';
-                 ctx.fillRect(Math.round(b.x + 2), Math.round(by + 2), 1, 1);
-                 // Restore fill style
-                 ctx.fillStyle = prevFill;
-            }
         });
     };
 
