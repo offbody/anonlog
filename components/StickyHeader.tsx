@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Translations, UserProfile } from '../types';
-import { IdentityWidget } from './IdentityWidget';
+import { IdentityWidget, generateColorFromId } from './IdentityWidget';
 import { SearchBar } from './SearchBar';
 
 interface StickyHeaderProps {
@@ -66,7 +66,12 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({ isVisible, userId, u
                         <span className="hidden sm:block text-xs font-bold uppercase text-black dark:text-white">
                             {userProfile.displayName || 'USER'}
                         </span>
-                        <IdentityWidget userId={userId} t={t} compact={true} />
+                        
+                        {/* Colored Square Avatar */}
+                        <div 
+                            className="w-8 h-8 border border-black dark:border-white"
+                            style={{ backgroundColor: generateColorFromId(userProfile.uid) }}
+                        />
                      </div>
                 ) : (
                     <button 

@@ -10,7 +10,7 @@ interface IdentityWidgetProps {
 }
 
 // Helper to generate consistent color from UUID
-const generateColorFromId = (id: string): string => {
+export const generateColorFromId = (id: string): string => {
   if (!id) return '#000000';
   let hash = 0;
   for (let i = 0; i < id.length; i++) {

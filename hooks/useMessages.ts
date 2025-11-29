@@ -18,6 +18,16 @@ import { signInWithPopup, signOut, onAuthStateChanged, User } from 'firebase/aut
 
 const USER_ID_KEY = 'anon_log_user_id';
 
+// Name Generator for Google Users
+const generateCyberpunkName = (): string => {
+    const adj = ['Neon', 'Cyber', 'Night', 'Digital', 'Techno', 'Binary', 'Quantum', 'Glitch', 'Retro', 'Hyper', 'Data', 'Null', 'Void', 'Flux'];
+    const noun = ['Walker', 'Ghost', 'Surfer', 'Runner', 'Drifter', 'Punk', 'Coder', 'Signal', 'System', 'Core', 'Viper', 'Ronin', 'Wraith', 'Node'];
+    const randomAdj = adj[Math.floor(Math.random() * adj.length)];
+    const randomNoun = noun[Math.floor(Math.random() * noun.length)];
+    const randomNum = Math.floor(Math.random() * 999);
+    return `${randomAdj}${randomNoun}_${randomNum}`;
+};
+
 export const useMessages = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -29,7 +39,7 @@ export const useMessages = () => {
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
         if (firebaseUser) {
-            // Logged in via Google
+            // Logged in
             setUserId(firebaseUser.uid);
             
             // Check/Create User Profile in Firestore
@@ -37,9 +47,20 @@ export const useMessages = () => {
             const userSnap = await getDoc(userRef);
 
             if (!userSnap.exists()) {
+                // New User
+                let displayName = firebaseUser.displayName;
+
+                // Check provider to see if it's Google
+                const isGoogle = firebaseUser.providerData.some(p => p.providerId === 'google.com');
+
+                // If Google or no name provided, generate a cyberpunk pseudonym
+                if (isGoogle || !displayName) {
+                    displayName = generateCyberpunkName();
+                }
+
                 const newProfile: UserProfile = {
                     uid: firebaseUser.uid,
-                    displayName: firebaseUser.displayName,
+                    displayName: displayName,
                     photoURL: firebaseUser.photoURL,
                     email: firebaseUser.email,
                     karma: 0,

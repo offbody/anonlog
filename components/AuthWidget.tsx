@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Translations, UserProfile } from '../types';
 import { LoginModal } from './LoginModal';
+import { generateColorFromId } from './IdentityWidget';
 
 interface AuthWidgetProps {
   user: UserProfile | null;
@@ -20,14 +21,10 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
   };
 
   const handleGoogleLogin = async () => {
-      // We pass this handler to the modal. 
-      // It awaits the login process before closing the modal 
-      // to ensure the popup isn't interrupted by component unmounting.
       try {
           await onLogin();
           setShowLoginModal(false);
       } catch (error) {
-          // Error is logged in hook, we can keep modal open or show error toast here
           console.error("AuthWidget: Login failed", error);
       }
   };
@@ -56,6 +53,9 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
     );
   }
 
+  // Generate color for the avatar square
+  const avatarColor = generateColorFromId(user.uid);
+
   return (
     <div className="relative z-40">
         <button 
@@ -71,14 +71,15 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
                 </div>
             </div>
             
-            <div className="w-8 h-8 rounded bg-gray-200 overflow-hidden border border-black dark:border-white">
-                {user.photoURL ? (
-                    <img src={user.photoURL} alt="Av" className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-black text-white font-bold">
-                        {user.displayName?.[0] || 'U'}
-                    </div>
-                )}
+            {/* Unified Avatar: Colored Square for all users (Google & Email) */}
+            <div 
+                className="w-8 h-8 border border-black dark:border-white flex items-center justify-center"
+                style={{ backgroundColor: avatarColor }}
+            >
+                {/* Optional: Add first letter if desired, but request implies just colored square */}
+                {/* <span className="text-xs font-bold mix-blend-difference text-white">
+                    {user.displayName?.[0]?.toUpperCase() || 'U'}
+                </span> */}
             </div>
         </button>
 
