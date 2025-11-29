@@ -7,16 +7,17 @@ interface PopularTagsProps {
   onTagClick: (tag: string) => void;
   activeTag: string;
   t: Translations;
+  className?: string; // Allow passing extra classes for layout
 }
 
-export const PopularTags: React.FC<PopularTagsProps> = ({ tags, onTagClick, activeTag, t }) => {
+export const PopularTags: React.FC<PopularTagsProps> = ({ tags, onTagClick, activeTag, t, className = '' }) => {
   if (tags.length === 0) return null;
 
-  // Limit to 30 tags to prevent layout overflow and keep it clean (~3-4 rows on desktop depending on width)
+  // Limit to 30 tags
   const visibleTags = tags.slice(0, 30);
 
   return (
-    <div className="w-full mb-8">
+    <div className={`w-full ${className}`}>
       <div className="flex items-center gap-4 mb-4">
          <span className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 whitespace-nowrap">
              {t.popular_tags_label} //
@@ -24,16 +25,19 @@ export const PopularTags: React.FC<PopularTagsProps> = ({ tags, onTagClick, acti
          <div className="h-[1px] w-full bg-black/10 dark:bg-white/10"></div>
       </div>
       
-      {/* Layout change: nowrap + scroll for mobile. Wrap for desktop. */}
-      {/* Removed fixed height constraints (md:max-h-[120px] md:overflow-hidden) to let it hug content */}
-      <div className="flex flex-nowrap overflow-x-auto md:flex-wrap gap-2 pb-2 md:pb-0 no-scrollbar -mx-6 px-6 md:mx-0 md:px-0">
+      {/* 
+        Responsive Layout:
+        Mobile/Tablet (< lg): Horizontal scroll (flex-row, overflow-x-auto)
+        Desktop (>= lg): Vertical list (flex-col) 
+      */}
+      <div className="flex flex-row overflow-x-auto lg:flex-col lg:overflow-visible gap-2 pb-2 lg:pb-0 no-scrollbar -mx-6 px-6 lg:mx-0 lg:px-0">
          {visibleTags.map((item, idx) => {
              const isActive = activeTag.toLowerCase() === item.tag.toLowerCase() || activeTag.toLowerCase().includes(item.tag.toLowerCase());
              return (
                  <button
                     key={idx}
                     onClick={() => onTagClick(item.tag)}
-                    className={`group flex items-center border transition-colors shrink-0 ${
+                    className={`group flex items-center justify-between border transition-colors shrink-0 text-left ${
                         isActive 
                         ? 'bg-black dark:bg-white border-black dark:border-white' 
                         : 'bg-transparent border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white'

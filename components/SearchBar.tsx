@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { SearchBarProps } from '../types';
 
 export const SearchBar: React.FC<SearchBarProps> = ({ value, onChange, t }) => {
   return (
-    <div className="w-full border-b border-black dark:border-white py-4 flex items-center gap-4">
+    <div className="w-full border-b border-black/10 dark:border-white/10 hover:border-black dark:hover:border-white focus-within:border-black dark:focus-within:border-white transition-colors duration-300 pb-4 flex items-center gap-4">
       <label htmlFor="search" className="text-sm font-bold uppercase tracking-widest whitespace-nowrap text-black dark:text-white">
         {t.search_label}
       </label>

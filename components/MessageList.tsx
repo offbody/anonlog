@@ -9,13 +9,14 @@ type SortOrder = 'newest' | 'oldest' | 'best';
 
 export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, onVote, highlightedMessageId, allMessagesRaw, isAdmin, t, locale }) => {
   const [activeTab, setActiveTab] = useState<TabType>('all');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('oldest');
+  // CHANGED: Default sort order to 'newest' (Feed style)
+  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
   
   // Refs to track if user is currently near the edge of the screen
-  const isNearBottomRef = useRef(true);
+  const isNearBottomRef = useRef(false);
   const isNearTopRef = useRef(true);
 
   const [lastReadTime, setLastReadTime] = useState<number>(() => {
@@ -23,7 +24,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
       return stored ? parseInt(stored, 10) : Date.now();
   });
 
-  // Track scroll position to decide whether to auto-scroll later
+  // Track scroll position
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
@@ -38,32 +39,14 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial position
-
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Conditional Auto-scroll logic
+  // CHANGED: Removed auto-scroll on mount. 
   useEffect(() => {
-    // Allow a brief delay for DOM to update height
-    const timer = setTimeout(() => {
-        // If sorting by OLDEST (Chronological)
-        if (sortOrder === 'oldest') {
-            // Only scroll to bottom if user was ALREADY near bottom
-            if (isNearBottomRef.current && bottomRef.current) {
-                bottomRef.current.scrollIntoView({ behavior: 'smooth' });
-            }
-        } 
-        // If sorting by NEWEST (Reverse Chronological)
-        else if (sortOrder === 'newest') {
-            // Only scroll to top if user was ALREADY near top
-            if (isNearTopRef.current && topRef.current) {
-                topRef.current.scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-    }, 100);
-
-    return () => clearTimeout(timer);
+    if (sortOrder === 'oldest' && isNearBottomRef.current && bottomRef.current) {
+         bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, sortOrder]);
 
   const allMyDialogs = useMemo(() => {
@@ -181,28 +164,26 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
             </button>
          </div>
 
-         <div className="flex flex-wrap items-center gap-2 pb-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-            <button 
-                onClick={() => setSortOrder('oldest')}
-                className={`transition-colors whitespace-nowrap ${sortOrder === 'oldest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
-            >
-                {/* Short label for Mobile/Tablets (< lg) */}
-                <span className="lg:hidden">{t.sort_oldest_short}</span>
-                {/* Long label for Desktop (>= lg) */}
-                <span className="hidden lg:inline">{t.sort_oldest}</span>
-            </button>
-            <span className="opacity-30 text-black dark:text-white">//</span>
+         <div className="flex flex-wrap items-center gap-2 pb-4">
             <button 
                 onClick={() => setSortOrder('newest')}
-                className={`transition-colors whitespace-nowrap ${sortOrder === 'newest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
+                className={`transition-colors whitespace-nowrap font-mono text-sm uppercase tracking-widest ${sortOrder === 'newest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
             >
                 <span className="lg:hidden">{t.sort_newest_short}</span>
                 <span className="hidden lg:inline">{t.sort_newest}</span>
             </button>
-            <span className="opacity-30 text-black dark:text-white">//</span>
+            <span className="opacity-30 text-black dark:text-white font-mono text-sm px-1">//</span>
+            <button 
+                onClick={() => setSortOrder('oldest')}
+                className={`transition-colors whitespace-nowrap font-mono text-sm uppercase tracking-widest ${sortOrder === 'oldest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
+            >
+                <span className="lg:hidden">{t.sort_oldest_short}</span>
+                <span className="hidden lg:inline">{t.sort_oldest}</span>
+            </button>
+            <span className="opacity-30 text-black dark:text-white font-mono text-sm px-1">//</span>
             <button 
                 onClick={() => setSortOrder('best')}
-                className={`transition-colors whitespace-nowrap ${sortOrder === 'best' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
+                className={`transition-colors whitespace-nowrap font-mono text-sm uppercase tracking-widest ${sortOrder === 'best' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
             >
                 <span className="lg:hidden">{t.sort_best_short}</span>
                 <span className="hidden lg:inline">{t.sort_best}</span>
@@ -218,7 +199,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-            {/* Auto-scroll anchor for TOP */}
+            {/* Anchor for Newest Sort */}
             <div ref={topRef} />
             
             {filteredMessages.map((msg) => {
@@ -245,7 +226,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
                 );
             })}
             
-            {/* Auto-scroll anchor for BOTTOM */}
+            {/* Anchor for Oldest Sort */}
             <div ref={bottomRef} />
         </div>
       )}

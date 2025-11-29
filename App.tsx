@@ -440,36 +440,70 @@ const App: React.FC = () => {
                 </div>
             </header>
 
-            <section className="w-full h-[100px] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-4">
+            {/* Changed mb-12 lg:mb-16 to mb-2 md:mb-8 lg:mb-8 to match header spacing */}
+            <section className="w-full h-[100px] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-2 md:mb-8 lg:mb-8">
                 <PixelCanvas />
             </section>
           </div>
 
-          <main className="w-full max-w-[1600px] mx-auto">
-              <PopularTags tags={popularTags} onTagClick={handleTagClick} activeTag={selectedTag || ''} t={t} />
+          {/* MAIN LAYOUT: CSS GRID (3 Columns Feed + 1 Column Sidebar) */}
+          <main className="w-full max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
               
-              <div className="w-full hidden md:block lg:hidden mb-8">
-                  <SearchBar value={searchQuery} onChange={handleSearchChange} t={t} />
+              {/* Left Column (Feed) */}
+              <div className="lg:col-span-3">
+                  {/* Mobile Popular Tags (Horizontal) */}
+                  <PopularTags 
+                      tags={popularTags} 
+                      onTagClick={handleTagClick} 
+                      activeTag={selectedTag || ''} 
+                      t={t} 
+                      className="lg:hidden mb-8"
+                  />
+                  
+                  <div className="w-full hidden md:block lg:hidden mb-8">
+                      <SearchBar value={searchQuery} onChange={handleSearchChange} t={t} />
+                  </div>
+                  
+                  <MessageList 
+                      messages={filteredMessages} 
+                      allMessagesRaw={messages}
+                      currentUserId={userId}
+                      onReply={setReplyingTo}
+                      onTagClick={handleTagClick}
+                      onFlashMessage={handleFlashMessage}
+                      onDeleteMessage={deleteMessage}
+                      onBlockUser={blockUser}
+                      onVote={toggleVote}
+                      highlightedMessageId={highlightedMessageId}
+                      isAdmin={isAdmin}
+                      t={t}
+                      locale={locale}
+                  />
               </div>
-              
-              <MessageList 
-                  messages={filteredMessages} 
-                  allMessagesRaw={messages}
-                  currentUserId={userId}
-                  onReply={setReplyingTo}
-                  onTagClick={handleTagClick}
-                  onFlashMessage={handleFlashMessage}
-                  onDeleteMessage={deleteMessage}
-                  onBlockUser={blockUser}
-                  onVote={toggleVote}
-                  highlightedMessageId={highlightedMessageId}
-                  isAdmin={isAdmin}
-                  t={t}
-                  locale={locale}
-              />
+
+              {/* Right Column (Sidebar) - Desktop Only */}
+              <aside className="hidden lg:block lg:col-span-1 h-fit sticky top-24">
+                   <SearchBar value={searchQuery} onChange={handleSearchChange} t={t} />
+                   <div className="mt-8">
+                       <PopularTags 
+                          tags={popularTags} 
+                          onTagClick={handleTagClick} 
+                          activeTag={selectedTag || ''} 
+                          t={t} 
+                          className="" 
+                       />
+                   </div>
+                   
+                   <footer className="mt-12 text-xs uppercase tracking-widest text-gray-400 leading-relaxed opacity-50">
+                       <p>{t.footer}</p>
+                       <p className="mt-2">2025. MARK 1.</p>
+                   </footer>
+              </aside>
+
           </main>
           
-          <footer className="mt-24 py-6 text-center text-xs uppercase tracking-widest border-t border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400">
+          {/* Mobile Footer */}
+          <footer className="lg:hidden mt-24 py-6 text-center text-xs uppercase tracking-widest border-t border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400">
             <p>{t.footer}</p>
           </footer>
 
@@ -477,15 +511,17 @@ const App: React.FC = () => {
 
         <ScrollToTop />
 
-        <StickyInput 
-          onSendMessage={handleSendMessage} 
-          isVisible={true} 
-          replyingTo={replyingTo}
-          onCancelReply={() => setReplyingTo(null)}
-          cooldownRemaining={cooldownRemaining}
-          t={t}
-          user={userProfile}
-        />
+        {userProfile && (
+            <StickyInput 
+              onSendMessage={handleSendMessage} 
+              isVisible={true}
+              replyingTo={replyingTo}
+              onCancelReply={() => setReplyingTo(null)}
+              cooldownRemaining={cooldownRemaining}
+              t={t}
+              user={userProfile}
+            />
+        )}
       </div>
     </>
   );
