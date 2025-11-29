@@ -15,7 +15,7 @@ import { useMessages } from './hooks/useMessages';
 import { Message, Language } from './types';
 import { TRANSLATIONS, PREDEFINED_TAGS } from './constants';
 import { auth } from './firebaseConfig';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const App: React.FC = () => {
   const { messages, addMessage, deleteMessage, blockUser, toggleVote, userId, userProfile, loginWithGoogle, logout } = useMessages();
