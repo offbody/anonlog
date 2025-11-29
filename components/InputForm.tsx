@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TITLE_LENGTH, MAX_TAG_LENGTH } from '../constants';
 
-export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, onCancelReply, shouldFocusOnReply = true, cooldownRemaining, t, user }) => {
+export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replyingTo, onCancelReply, shouldFocusOnReply = true, cooldownRemaining, t }) => {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [tagInputText, setTagInputText] = useState('');

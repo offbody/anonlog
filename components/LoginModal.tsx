@@ -5,8 +5,7 @@ import { auth, db } from '../firebaseConfig';
 import { 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
-    updateProfile, 
-    AuthError 
+    updateProfile
 } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 

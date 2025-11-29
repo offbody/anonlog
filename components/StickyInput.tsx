@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StickyInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TAG_LENGTH, MAX_TITLE_LENGTH } from '../constants';
 
-export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisible, replyingTo, onCancelReply, cooldownRemaining, t, user }) => {
+export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisible, replyingTo, onCancelReply, cooldownRemaining, t }) => {
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
   const [tagInputText, setTagInputText] = useState('');

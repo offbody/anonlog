@@ -6,7 +6,6 @@ import { IdentityWidget } from './IdentityWidget';
 export const MessageItem: React.FC<MessageItemProps> = ({ message, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, onVote, parentSequenceNumber, parentSenderId, allMessages, isFlashHighlighted, isAdmin, t, locale }) => {
   const date = new Date(message.timestamp);
   const timeString = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-  const dateString = date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
   
   const isOwnMessage = message.senderId === currentUserId;
 
