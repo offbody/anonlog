@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MessageList } from './components/MessageList';
 import { SearchBar } from './components/SearchBar';
@@ -199,7 +198,7 @@ const App: React.FC = () => {
           .map(([tag, count]) => ({ tag, count }));
   }, [messages]);
 
-  const handleSendMessage = (content: string, title: string, manualTags?: string[]) => {
+  const handleSendMessage = async (content: string, title: string, manualTags?: string[]) => {
       const now = Date.now();
       const timeSinceLast = now - lastSentTime.current;
       
@@ -207,7 +206,7 @@ const App: React.FC = () => {
           return;
       }
 
-      addMessage(content, title, replyingTo?.id, manualTags);
+      await addMessage(content, title, replyingTo?.id, manualTags);
       lastSentTime.current = now;
       setCooldownRemaining(5);
   };
