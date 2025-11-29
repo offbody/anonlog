@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Translations, UserProfile } from '../types';
-import { IdentityWidget, generateColorFromId } from './IdentityWidget';
+import { generateColorFromId } from './IdentityWidget';
 import { SearchBar } from './SearchBar';
 
 interface StickyHeaderProps {
@@ -15,7 +15,7 @@ interface StickyHeaderProps {
   onSearchChange?: (val: string) => void;
 }
 
-export const StickyHeader: React.FC<StickyHeaderProps> = ({ isVisible, userId, userProfile, onLogin, onToggleMenu, t, searchQuery = '', onSearchChange = () => {} }) => {
+export const StickyHeader: React.FC<StickyHeaderProps> = ({ isVisible, userProfile, onLogin, onToggleMenu, t, searchQuery = '', onSearchChange = () => {} }) => {
   return (
     <div 
       className={`fixed top-0 left-0 w-full z-40 transform transition-transform duration-300 ease-in-out bg-white/95 dark:bg-[#121212]/95 backdrop-blur-sm border-b border-black/10 dark:border-white/10 ${
