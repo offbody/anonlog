@@ -56,12 +56,6 @@ const App: React.FC = () => {
       }
   };
 
-  const handleAdminLogout = async () => {
-      await signOut(auth);
-      setIsAdmin(false);
-      alert('LOGGED OUT FROM GOD MODE');
-  };
-
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const lastSentTime = useRef<number>(0);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
@@ -319,7 +313,7 @@ const App: React.FC = () => {
           
           <div ref={topSectionRef}>
             {/* UNIFIED HEADER (Desktop & Mobile) */}
-            <header className="mb-2 md:mb-8 lg:mb-8 w-full h-16 sm:h-20 flex items-center justify-between border-b border-black dark:border-white pb-4 sm:pb-0 sm:border-none relative gap-4">
+            <header className="mb-6 md:mb-8 w-full h-16 sm:h-20 flex items-center justify-between border-b border-black dark:border-white pb-4 sm:pb-0 sm:border-none relative gap-4">
                 
                 {/* LEFT: Burger Menu & Search */}
                 <div className="flex-1 flex items-center justify-start gap-6">
@@ -363,7 +357,7 @@ const App: React.FC = () => {
                 </div>
             </header>
 
-            <section className="w-full h-[100px] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-2 md:mb-8 lg:mb-8">
+            <section className="w-full h-[100px] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-6 md:mb-8">
                 <PixelCanvas />
             </section>
           </div>

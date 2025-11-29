@@ -6,9 +6,9 @@ interface CustomSearchBarProps extends SearchBarProps {
   variant?: 'default' | 'header';
 }
 
-export const SearchBar: React.FC<CustomSearchBarProps> = ({ value, onChange, t, variant = 'default' }) => {
-  // We keep the variant prop for potential future spacing needs, 
-  // but we restore the border styles for both variants as requested.
+export const SearchBar: React.FC<CustomSearchBarProps> = ({ value, onChange, t }) => {
+  // Variant is currently passed in props but unused in logic as styles were unified.
+  // Removed from destructuring to satisfy linter.
   
   return (
     <div 
