@@ -38,8 +38,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-          // Simple email check for admin for now
-          if (user && user.email && (user.email.includes('admin') || user.email === 'offbody@gmail.com')) {
+          // SECURITY FIX: Strict check for admin email only.
+          // Removed user.email.includes('admin') vulnerability.
+          if (user && user.email === 'offbody@gmail.com') {
               setIsAdmin(true);
           } else {
               setIsAdmin(false);

@@ -9,27 +9,39 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
   const [tagInputText, setTagInputText] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const [expanded, setExpanded] = useState(false); // Track expansion for title
+  const [isSending, setIsSending] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (text.trim().length === 0 || cooldownRemaining > 0) return;
+    if (text.trim().length === 0 || cooldownRemaining > 0 || isSending) return;
     
+    setIsSending(true);
+
     const manualTags = tagInputText
         .split(',')
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0);
 
-    onSendMessage(text, title, manualTags);
-    setText('');
-    setTitle('');
-    setTagInputText('');
-    setShowTagInput(false);
-    setExpanded(false);
-    
-    if (replyingTo) onCancelReply();
+    try {
+        await onSendMessage(text, title, manualTags);
+        // Only clear if success
+        setText('');
+        setTitle('');
+        setTagInputText('');
+        setShowTagInput(false);
+        setExpanded(false);
+        
+        if (replyingTo) onCancelReply();
+
+    } catch (error: any) {
+         console.error("Failed to send:", error);
+         alert(`ОШИБКА ОТПРАВКИ: ${error.code || error.message || 'Нет прав доступа к БД'}.`);
+    } finally {
+        setIsSending(false);
+    }
   };
 
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +124,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
                     onChange={handleTitleChange}
                     placeholder={t.title_placeholder}
                     className="w-full bg-transparent border-b border-black/10 dark:border-white/10 py-1 text-sm font-bold text-black dark:text-white placeholder-gray-400 focus:outline-none"
+                    disabled={isSending}
                />
            </div>
        )}
@@ -127,11 +140,13 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
                         onChange={handleTagChange}
                         placeholder={t.tags_placeholder}
                         className="w-full bg-transparent py-1 pr-6 text-sm font-mono text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none"
+                        disabled={isSending}
                     />
                     <button
                         type="button"
                         onClick={handleCloseTags}
                         className="absolute right-0 top-1/2 -translate-y-1/2 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors"
+                        disabled={isSending}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -150,6 +165,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
                 onClick={() => setExpanded(!expanded)}
                 className={`flex items-center justify-center w-8 h-8 border border-black/10 dark:border-white/10 transition-colors shrink-0 ${expanded ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black'}`}
                 title="Expand Title"
+                disabled={isSending}
             >
                 <span className="text-xs font-bold">T</span>
             </button>
@@ -162,6 +178,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
                 onClick={() => setShowTagInput(!showTagInput)}
                 className="flex items-center justify-center w-8 h-8 border border-black/10 dark:border-white/10 text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors shrink-0"
                 title={t.add_tag_btn}
+                disabled={isSending}
              >
                 <span className="text-sm font-bold">#</span>
              </button>
@@ -176,6 +193,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
                 onChange={handleTextChange}
                 placeholder={t.input_placeholder}
                 className="w-full bg-transparent text-black dark:text-white text-base pr-14 placeholder-black dark:placeholder-white focus:outline-none"
+                disabled={isSending}
               />
               
               <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none pl-2 bg-gradient-to-l from-white dark:from-[#252525] to-transparent">
@@ -197,10 +215,12 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
           {/* Send Button */}
           <button
             type="submit"
-            disabled={text.trim().length === 0 || cooldownRemaining > 0}
+            disabled={text.trim().length === 0 || cooldownRemaining > 0 || isSending}
             className="shrink-0 h-10 px-4 sm:px-6 border border-black/10 dark:border-white/10 text-black dark:text-white text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {cooldownRemaining > 0 ? (
+            {isSending ? (
+                <span className="animate-pulse">...</span>
+            ) : cooldownRemaining > 0 ? (
                 <span>{cooldownRemaining}s</span>
             ) : (
                 <>

@@ -117,7 +117,8 @@ export interface Translations {
 }
 
 export interface MessageInputProps {
-  onSendMessage: (content: string, title: string, manualTags?: string[]) => void;
+  // CHANGED: Return Promise<void> to allow waiting for completion/error
+  onSendMessage: (content: string, title: string, manualTags?: string[]) => Promise<void>;
   replyingTo: Message | null;
   onCancelReply: () => void;
   shouldFocusOnReply?: boolean;

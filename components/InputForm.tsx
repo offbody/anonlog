@@ -9,27 +9,41 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
   const [tagInputText, setTagInputText] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (text.trim().length === 0 || cooldownRemaining > 0) return;
+    if (text.trim().length === 0 || cooldownRemaining > 0 || isSending) return;
     
+    setIsSending(true);
+
     const manualTags = tagInputText
         .split(',')
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0);
 
-    onSendMessage(text, title, manualTags);
-    setText('');
-    setTitle('');
-    setTagInputText('');
-    setShowTagInput(false);
-    
-    if (replyingTo) onCancelReply();
+    try {
+        // Wait for the message to actually be sent
+        await onSendMessage(text, title, manualTags);
+        
+        // Only clear form if successful
+        setText('');
+        setTitle('');
+        setTagInputText('');
+        setShowTagInput(false);
+        if (replyingTo) onCancelReply();
+
+    } catch (error: any) {
+        // Show error to user
+        console.error("Failed to send:", error);
+        alert(`ОШИБКА ОТПРАВКИ: ${error.code || error.message || 'Нет прав доступа к БД'}. Проверьте правила Firebase.`);
+    } finally {
+        setIsSending(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -130,6 +144,7 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
                 onChange={handleTitleChange}
                 placeholder={t.title_placeholder}
                 className="w-full bg-transparent border-b border-black/5 dark:border-white/5 px-8 py-4 text-lg font-bold uppercase tracking-wide text-black dark:text-white placeholder-gray-400/70 dark:placeholder-gray-600/70 focus:outline-none"
+                disabled={isSending}
               />
           )}
 
@@ -143,11 +158,13 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
                         onChange={handleTagChange}
                         placeholder={t.tags_placeholder}
                         className="w-full bg-transparent border-b border-black/20 dark:border-white/20 py-2 pr-6 text-sm font-mono text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:border-black dark:focus:border-white"
+                        disabled={isSending}
                     />
                     <button
                         type="button"
                         onClick={handleCloseTags}
                         className="absolute right-0 top-1/2 -translate-y-1/2 text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white transition-colors"
+                        disabled={isSending}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -165,6 +182,7 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
             onKeyDown={handleKeyDown}
             placeholder={t.input_placeholder}
             className={`w-full flex-1 bg-transparent text-black dark:text-white px-8 py-6 text-base sm:text-lg placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none resize-none ${showTagInput ? 'h-48' : 'h-40'}`}
+            disabled={isSending}
           />
           
           <div className="w-full px-8 pb-8 flex items-center gap-6 shrink-0">
@@ -181,6 +199,7 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
                         text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all
                         ${isFocused ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
                     `}
+                    disabled={isSending}
                  >
                     <span>+</span>
                     {t.add_tag_btn}
@@ -204,10 +223,10 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
         <span className="text-sm font-bold uppercase tracking-widest text-black dark:text-white">{t.new_entry_label}</span>
         <button
           type="submit"
-          disabled={text.trim().length === 0 || cooldownRemaining > 0}
+          disabled={text.trim().length === 0 || cooldownRemaining > 0 || isSending}
           className="px-8 py-3 border border-black dark:border-white text-black dark:text-white text-sm font-bold uppercase tracking-widest hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
-          {cooldownRemaining > 0 ? `${cooldownRemaining}s` : t.publish_btn}
+          {isSending ? 'SENDING...' : (cooldownRemaining > 0 ? `${cooldownRemaining}s` : t.publish_btn)}
         </button>
       </div>
     </form>

@@ -186,7 +186,8 @@ export const useMessages = () => {
           nextSequence = maxSeq + 1;
       }
       
-      const isAdmin = userProfile?.email?.includes('admin') || false; // Simple check for now
+      // SECURITY FIX: Strict check for admin email only.
+      const isAdmin = userProfile?.email === 'offbody@gmail.com';
 
       const newMessage: Omit<Message, 'id'> = {
         title: title.trim() || undefined,
@@ -206,6 +207,8 @@ export const useMessages = () => {
 
     } catch (e) {
       console.error("Error adding document: ", e);
+      // RETHROW the error so the UI knows it failed!
+      throw e;
     }
 
   }, [userId, messages, userProfile]);
