@@ -14,6 +14,72 @@ interface CreatePostModalProps {
 
 type TabType = 'text' | 'media' | 'link';
 
+// --- Helper: Client-Side Image Compression ---
+const compressImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Resize logic: Cap at 1920px (Full HD) to ensure size reduction
+        const MAX_DIMENSION = 1920;
+        if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+          const scale = MAX_DIMENSION / Math.max(width, height);
+          width *= scale;
+          height *= scale;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+            reject(new Error('Canvas context failed'));
+            return;
+        }
+
+        // Fill background with white (handling transparent PNGs converting to JPEG)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Compress to JPEG at 70% quality
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Compression failed'));
+              return;
+            }
+            
+            // Create a new File object
+            const newFileName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
+            const newFile = new File([blob], newFileName, {
+              type: 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            
+            resolve(newFile);
+          },
+          'image/jpeg',
+          0.7
+        );
+      };
+      
+      img.onerror = (err) => reject(err);
+    };
+    
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSendMessage, t }) => {
   const [activeTab, setActiveTab] = useState<TabType>('text');
   const [title, setTitle] = useState('');
@@ -22,6 +88,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
   const [tagInputText, setTagInputText] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false); // UI State for compression
   
   // File Upload State
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -57,23 +124,55 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
       };
   }, [previewUrl]);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
       setUploadError(null);
+      setIsCompressing(false);
       
-      // Size Validation
-      if (file.size > MAX_FILE_SIZE) {
-          setUploadError(`FILE TOO LARGE (MAX 2MB)`);
-          return;
-      }
-
       // Type Validation (Image or Video)
       if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
           setUploadError('UNSUPPORTED FILE TYPE');
           return;
       }
 
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      // 1. VIDEO LOGIC (Hard Limit, No Client Compression)
+      if (file.type.startsWith('video/')) {
+          if (file.size > MAX_FILE_SIZE) {
+              setUploadError(`VIDEO TOO LARGE (MAX 2MB)`);
+              return;
+          }
+          setSelectedFile(file);
+          setPreviewUrl(URL.createObjectURL(file));
+          return;
+      }
+
+      // 2. IMAGE LOGIC (Attempt Compression if > MAX_FILE_SIZE)
+      if (file.type.startsWith('image/')) {
+          if (file.size > MAX_FILE_SIZE) {
+              try {
+                  setIsCompressing(true);
+                  // Attempt compression
+                  const compressedFile = await compressImage(file);
+                  
+                  // Re-check size after compression
+                  if (compressedFile.size > MAX_FILE_SIZE) {
+                      setUploadError(`IMAGE TOO LARGE EVEN AFTER COMPRESSION (>2MB)`);
+                      setSelectedFile(null);
+                  } else {
+                      setSelectedFile(compressedFile);
+                      setPreviewUrl(URL.createObjectURL(compressedFile));
+                  }
+              } catch (err) {
+                  console.error("Compression error:", err);
+                  setUploadError('COMPRESSION FAILED');
+              } finally {
+                  setIsCompressing(false);
+              }
+          } else {
+              // File is small enough, use as is
+              setSelectedFile(file);
+              setPreviewUrl(URL.createObjectURL(file));
+          }
+      }
   };
 
   const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +194,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
 
   const removeFile = () => {
       setSelectedFile(null);
+      setIsCompressing(false);
+      setUploadError(null);
       if (previewUrl) {
           URL.revokeObjectURL(previewUrl);
           setPreviewUrl(null);
@@ -107,7 +208,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
       if (activeTab === 'text' && !text.trim()) return;
       if (activeTab === 'link' && !linkUrl.trim()) return;
       if (activeTab === 'media' && !selectedFile) return;
-      if (isSending) return;
+      if (isSending || isCompressing) return;
       
       setIsSending(true);
 
@@ -122,7 +223,6 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
           let mediaUrls: string[] = [];
           
           if (activeTab === 'link' && linkUrl.trim()) {
-              // If link tab, append link to text or use as sole content
               finalContent = `${text}\n\n${linkUrl.trim()}`.trim();
           }
 
@@ -135,12 +235,6 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
               const downloadUrl = await getDownloadURL(storageRef);
               mediaUrls.push(downloadUrl);
               
-              // Use caption as text content if provided (optional)
-              // For now, we leave finalContent empty if user didn't switch tabs to add text, 
-              // or we can allow adding text in media tab later. 
-              // The logic here assumes 'text' state is shared across tabs if we wanted, 
-              // but UI hides textarea in media tab. 
-              // Let's assume Media posts are just Title + Media for now, or minimal content.
               if (!finalContent) finalContent = ""; 
           }
 
@@ -164,6 +258,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
   // Check if form is valid for submission
   const isSubmitDisabled = 
       isSending || 
+      isCompressing ||
       !title.trim() || 
       (activeTab === 'text' && !text.trim()) || 
       (activeTab === 'link' && !linkUrl.trim()) ||
@@ -282,8 +377,19 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
 
                     {activeTab === 'media' && (
                         <div className="h-[300px] flex flex-col gap-2">
+                            
+                            {/* Loading State for Compression */}
+                            {isCompressing && (
+                                <div className="w-full h-full flex items-center justify-center bg-black/5 dark:bg-white/5 border border-[#1D2025]/20 dark:border-white/20">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black dark:border-white"></div>
+                                        <span className="text-xs font-bold uppercase tracking-widest text-black dark:text-white">OPTIMIZING...</span>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* File Preview Area */}
-                            {selectedFile ? (
+                            {!isCompressing && selectedFile ? (
                                 <div className="w-full h-full border border-[#1D2025]/20 dark:border-white/20 relative flex items-center justify-center bg-black">
                                     {selectedFile.type.startsWith('image/') ? (
                                         <img src={previewUrl!} alt="Preview" className="max-w-full max-h-full object-contain" />
@@ -299,11 +405,14 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
                                         <span className="material-symbols-outlined">close</span>
                                     </button>
                                     
-                                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-[10px] font-mono">
-                                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-[10px] font-mono flex items-center gap-2">
+                                        <span>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                                        {selectedFile.name.endsWith('.jpg') && selectedFile.type === 'image/jpeg' && (
+                                             <span className="text-green-400 font-bold">[COMPRESSED]</span>
+                                        )}
                                     </div>
                                 </div>
-                            ) : (
+                            ) : !isCompressing && (
                                 // Upload Area
                                 <div 
                                     onDrop={handleDrop}
