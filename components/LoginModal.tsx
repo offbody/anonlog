@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Translations, UserProfile } from '../types';
 import { auth, db } from '../firebaseConfig';
@@ -161,10 +162,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onGoogleLogin, 
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#00000080] p-4 animate-fade-in font-mono">
-      {/* Updated: Border color fixed to #1D2025 even in dark mode */}
       <div className="relative w-full max-w-[450px] bg-white dark:bg-[#121212] border-2 border-[#1D2025] flex flex-col text-black dark:text-white">
         
-        {/* Header Bar - Updated border */}
+        {/* Header Bar */}
         <div className="flex items-center justify-between border-b-2 border-[#1D2025] p-4">
             <span className="text-sm font-bold uppercase tracking-widest">
                 {mode === 'login' ? t.auth_title_login : t.auth_title_register} //
@@ -180,36 +180,35 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onGoogleLogin, 
 
         <div className="p-6 md:p-8 flex flex-col gap-6">
             
-            {/* Disclaimer - Updated border */}
+            {/* Disclaimer */}
             <p className="text-[10px] uppercase tracking-wider text-[#1D2025] dark:text-gray-400 leading-relaxed text-justify border-l-2 border-[#1D2025] pl-3">
                 {t.auth_disclaimer}
             </p>
 
             {/* Primary Actions */}
             <div className="flex flex-col gap-3">
-                {/* Google Button - Updated border */}
+                {/* Google Button - Outline Style with Colored Icon - Fixed Height 40px (h-[40px]) */}
                 <button 
                     type="button"
                     onClick={handleGoogleClick}
                     disabled={isLoading}
-                    className="group relative w-full h-14 bg-transparent border border-[#1D2025] flex items-center justify-center gap-4 hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black transition-all active:translate-y-[2px] disabled:opacity-50 disabled:cursor-wait"
+                    className="group relative w-full h-[40px] bg-transparent border border-[#1D2025] dark:border-white flex items-center justify-center gap-4 hover:bg-white hover:text-black dark:hover:bg-white dark:hover:text-black transition-all active:translate-y-[2px] disabled:opacity-50 disabled:cursor-wait"
                 >
-                    <div className="w-5 h-5 bg-white p-0.5 rounded-sm flex items-center justify-center">
-                         <svg viewBox="0 0 24 24" className="w-full h-full">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.2 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                    </div>
-                    <span className="text-xs font-bold uppercase tracking-widest">
+                    {/* Official Colored Google G Icon - SVG handles color */}
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                    </svg>
+                    <span className="text-xs font-bold uppercase tracking-widest text-[#1D2025] dark:text-white group-hover:text-black dark:group-hover:text-black">
                         {isLoading ? 'CONNECTING...' : t.auth_google_btn}
                     </span>
-                    {!isLoading && <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 text-[8px]">→</div>}
+                    {!isLoading && <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 text-[8px] group-hover:text-black dark:group-hover:text-black">→</div>}
                 </button>
             </div>
 
-            {/* Divider - Updated lines to bg-[#1D2025] */}
+            {/* Divider */}
             <div className="flex items-center gap-4">
                 <div className="h-[1px] flex-1 bg-[#1D2025]"></div>
                 <span className="text-[10px] font-bold text-[#1D2025] dark:text-white uppercase tracking-widest">// {t.auth_or_divider} //</span>
@@ -280,10 +279,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onClose, onGoogleLogin, 
                      )}
                 </div>
 
+                {/* Submit Button - Outline Style - Fixed Height 40px (h-[40px]) - Hover Fill White */}
                 <button 
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-12 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-[0.2em] hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors mt-2 shadow-lg disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-2"
+                    className="w-full h-[40px] bg-transparent border border-[#1D2025] dark:border-white text-[#1D2025] dark:text-white text-xs font-bold uppercase tracking-[0.2em] hover:bg-white hover:text-black dark:hover:bg-white dark:hover:text-black transition-colors mt-2 shadow-none disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-2"
                 >
                     {isLoading && (
                         <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

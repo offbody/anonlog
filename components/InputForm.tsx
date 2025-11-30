@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { MessageInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TITLE_LENGTH, MAX_TAG_LENGTH } from '../constants';
@@ -217,7 +218,7 @@ export const InputForm: React.FC<MessageInputProps> = ({ onSendMessage, replying
         <button
           type="submit"
           disabled={text.trim().length === 0 || cooldownRemaining > 0 || isSending}
-          className="px-8 py-3 border border-[#1D2025] dark:border-white text-black dark:text-white text-sm font-bold uppercase tracking-widest hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="h-10 px-8 border border-[#1D2025] dark:border-white text-black dark:text-white text-sm font-bold uppercase tracking-widest hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
           {isSending ? 'SENDING...' : (cooldownRemaining > 0 ? `${cooldownRemaining}s` : t.publish_btn)}
         </button>

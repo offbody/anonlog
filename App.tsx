@@ -2,7 +2,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MessageList } from './components/MessageList';
 import { SearchBar } from './components/SearchBar';
-// StickyInput removed
 import { StickyHeader } from './components/StickyHeader';
 import { Preloader } from './components/Preloader';
 import { AuthWidget } from './components/AuthWidget';
@@ -10,7 +9,7 @@ import { PixelCanvas } from './components/PixelCanvas';
 import { ScrollToTop } from './components/ScrollToTop';
 import { AdminLogin } from './components/AdminLogin';
 import { PopularTags } from './components/PopularTags';
-import { CreatePostModal } from './components/CreatePostModal'; // Import new modal
+import { CreatePostModal } from './components/CreatePostModal'; 
 import { useMessages } from './hooks/useMessages';
 import { Message, Language } from './types';
 import { TRANSLATIONS, PREDEFINED_TAGS } from './constants';
@@ -18,15 +17,7 @@ import { auth } from './firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
 import { IconButton } from './components/IconButton';
 import { PrimaryButton } from './components/PrimaryButton';
-import { StickyInput } from './components/StickyInput'; // Import only for Reply mode, if we keep reply separate, or we can reuse modal later. For now, request said replace StickyInput at bottom. 
-// Actually, StickyInput was used for replies too. If we remove it completely, we lose reply functionality.
-// The user request was "уберем внизу страницы интерфейс ввода сообщения... Вместо него - по нажатию на кнопку создать".
-// This implies the *always visible* bottom bar is gone. 
-// I will keep StickyInput ONLY for replies (if replyingTo is set), but hide it otherwise.
-// Wait, StickyInput component has `isVisible` prop.
-// However, the prompt says "interface input message at bottom is no longer needed". 
-// I will repurpose StickyInput ONLY for replies, or assuming for now we focus on the "Create" button flow.
-// Let's modify StickyInput usage to only show when replying.
+import { StickyInput } from './components/StickyInput';
 
 const App: React.FC = () => {
   const { messages, addMessage, deleteMessage, blockUser, toggleVote, userId, userProfile, loginWithGoogle, logout } = useMessages();
@@ -35,8 +26,8 @@ const App: React.FC = () => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Side menu state
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // New Modal State
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); 
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
@@ -50,7 +41,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-          // SECURITY FIX: Strict check for admin email only.
           if (user && user.email === 'root@retrolog.ru') {
               setIsAdmin(true);
           } else {
@@ -113,7 +103,6 @@ const App: React.FC = () => {
     return false;
   });
 
-  // Listen for system theme changes and sync automatically
   useEffect(() => {
       if (!window.matchMedia) return;
       
@@ -122,7 +111,6 @@ const App: React.FC = () => {
           setIsDark(e.matches);
       };
 
-      // Set initial value
       setIsDark(mediaQuery.matches);
 
       mediaQuery.addEventListener('change', handleChange);
@@ -214,7 +202,7 @@ const App: React.FC = () => {
       const now = Date.now();
       const timeSinceLast = now - lastSentTime.current;
       
-      if (timeSinceLast < 5000) { // Reduced cooldown
+      if (timeSinceLast < 5000) { 
           return;
       }
 
@@ -230,7 +218,7 @@ const App: React.FC = () => {
           setSelectedTag(tag);
           setSearchQuery(''); 
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          setIsDrawerOpen(false); // Close mobile drawer if open
+          setIsDrawerOpen(false); 
       }
   };
 
@@ -337,42 +325,43 @@ const App: React.FC = () => {
         <div className="w-full max-w-[1600px] mx-auto px-6 sm:p-12 pt-6">
           
           <div ref={topSectionRef}>
-            {/* UNIFIED HEADER (Desktop & Mobile) */}
-            <header className="mb-6 md:mb-8 w-full h-16 sm:h-20 flex items-center justify-between border-b border-black dark:border-white pb-4 sm:pb-0 sm:border-none relative gap-4">
+            {/* UNIFIED HEADER (Desktop & Mobile) - Added relative z-20 and shrink-0 to prevent chrome collapsing */}
+            <header className="mb-6 md:mb-8 w-full h-16 sm:h-20 flex items-center justify-between border-b border-black dark:border-white pb-4 sm:pb-0 sm:border-none relative gap-4 z-20">
                 
                 {/* LEFT: Burger Menu & Search */}
-                <div className="flex-1 flex items-center justify-start gap-4 sm:gap-6">
+                <div className="flex-1 flex items-center justify-start gap-4 sm:gap-6 min-w-0">
                     <IconButton 
                         onClick={() => setIsDrawerOpen(true)}
                         variant="outlined"
                         icon={<span className="material-symbols-outlined">menu</span>}
+                        className="shrink-0"
                     />
 
-                    {/* Search Bar - Hidden on small mobile, visible on desktop */}
-                    <div className="hidden md:block w-80">
+                    {/* Search Bar - Hidden on small mobile, visible on desktop. Added shrink-0 to prevent collapse in Chrome */}
+                    <div className="hidden md:block w-80 shrink-0">
                          <SearchBar value={searchQuery} onChange={handleSearchChange} t={t} variant="header" />
                     </div>
                 </div>
 
                 {/* CENTER: System Name */}
-                <div className="flex-none flex justify-center">
+                <div className="flex-none flex justify-center shrink-0">
                     <a 
                         href="/"
-                        className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-xs sm:text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap hidden sm:block"
+                        className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-xs sm:text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap hidden sm:block shrink-0"
                     >
                         {t.system_name}
                     </a>
                     {/* Mobile abbreviated name */}
                      <a 
                         href="/"
-                        className="border border-dashed border-black dark:border-white/50 px-2 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap sm:hidden"
+                        className="border border-dashed border-black dark:border-white/50 px-2 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap sm:hidden shrink-0"
                     >
                         RETROLOG
                     </a>
                 </div>
 
                 {/* RIGHT: Auth & Tools */}
-                <div className="flex-1 flex justify-end items-center gap-2 sm:gap-4">
+                <div className="flex-1 flex justify-end items-center gap-2 sm:gap-4 shrink-0">
                     
                     {/* Tool Bar Group */}
                     <div className="flex items-center gap-2 mr-2">
@@ -452,8 +441,8 @@ const App: React.FC = () => {
                   />
               </div>
 
-              {/* Right Column (Sidebar) - Desktop Only */}
-              <aside className="hidden lg:block lg:col-span-1 h-fit sticky top-24">
+              {/* Right Column (Sidebar) - Desktop Only. Add z-10 and w-full. Removed h-fit/self-start for Chrome stickiness stability */}
+              <aside className="hidden lg:block lg:col-span-1 sticky top-24 w-full z-10 h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar">
                    <PopularTags 
                       tags={popularTags} 
                       onTagClick={handleTagClick} 
@@ -479,7 +468,7 @@ const App: React.FC = () => {
 
         <ScrollToTop />
         
-        {/* Only show StickyInput when replying, acting as a reply modal of sorts */}
+        {/* Only show StickyInput when replying */}
         {userProfile && replyingTo && (
             <StickyInput 
               onSendMessage={handleSendMessage} 

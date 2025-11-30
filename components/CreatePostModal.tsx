@@ -235,17 +235,17 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
                     )}
                 </div>
 
-                {/* Footer Buttons (Square) */}
+                {/* Footer Buttons (Square) - Heights fixed to h-10 (40px) */}
                 <div className="flex items-center justify-end gap-3 p-4 sm:p-6 pt-0 shrink-0 bg-r-light dark:bg-r-dark z-10">
                      <button 
-                        className="px-6 py-3 border border-[#1D2025]/20 dark:border-white/20 text-xs font-bold uppercase tracking-widest text-[#1D2025] dark:text-white hover:bg-[#1D2025]/5 dark:hover:bg-white/10 transition-colors"
+                        className="h-10 px-6 border border-[#1D2025]/20 dark:border-white/20 text-xs font-bold uppercase tracking-widest text-[#1D2025] dark:text-white hover:bg-[#1D2025]/5 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
                      >
                          {t.save_draft_btn}
                      </button>
                      <button 
                         onClick={handleSubmit}
                         disabled={isSubmitDisabled}
-                        className="px-6 py-3 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        className="h-10 px-6 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
                      >
                          {isSending ? 'SENDING...' : t.publish_post_btn}
                      </button>

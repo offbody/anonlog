@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Translations } from '../types';
 
@@ -28,7 +29,8 @@ export const Preloader: React.FC<PreloaderProps> = ({ isVisible, t }) => {
       }`}
     >
       <div className="flex flex-col items-center gap-4">
-        <div className="text-4xl font-bold font-mono tracking-widest text-black dark:text-white animate-pulse">
+        {/* Changed to font-normal (Regular) */}
+        <div className="text-4xl font-normal font-mono tracking-widest text-black dark:text-white animate-pulse">
           {t.preloader_title}
         </div>
         

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { StickyInputProps } from '../types';
 import { MAX_MESSAGE_LENGTH, MAX_TAG_LENGTH, MAX_TITLE_LENGTH } from '../constants';
@@ -151,12 +152,12 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
 
        <div className="w-full px-4 py-3 flex items-center gap-4">
        <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-4">
-          {/* Expand/Collapse for Title */}
+          {/* Expand/Collapse for Title - 40px */}
           {!replyingTo && (
             <button
                 type="button"
                 onClick={() => setExpanded(!expanded)}
-                className={`flex items-center justify-center w-8 h-8 border border-[#1D2025]/10 dark:border-white/10 transition-colors shrink-0 ${expanded ? 'bg-[#1D2025] text-white dark:bg-white dark:text-black' : 'text-black dark:text-white hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black'}`}
+                className={`flex items-center justify-center w-10 h-10 border border-[#1D2025]/10 dark:border-white/10 transition-colors shrink-0 ${expanded ? 'bg-[#1D2025] text-white dark:bg-white dark:text-black' : 'text-black dark:text-white hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black'}`}
                 title="Expand Title"
                 disabled={isSending}
             >
@@ -164,12 +165,12 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
             </button>
           )}
 
-          {/* Toggle Tags Button */}
+          {/* Toggle Tags Button - 40px */}
           {!showTagInput && (
              <button
                 type="button"
                 onClick={() => setShowTagInput(!showTagInput)}
-                className="flex items-center justify-center w-8 h-8 border border-[#1D2025]/10 dark:border-white/10 text-black dark:text-white hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors shrink-0"
+                className="flex items-center justify-center w-10 h-10 border border-[#1D2025]/10 dark:border-white/10 text-black dark:text-white hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors shrink-0"
                 title={t.add_tag_btn}
                 disabled={isSending}
              >
@@ -205,7 +206,7 @@ export const StickyInput: React.FC<StickyInputProps> = ({ onSendMessage, isVisib
               </div>
           </div>
 
-          {/* Send Button */}
+          {/* Send Button - 40px */}
           <button
             type="submit"
             disabled={text.trim().length === 0 || cooldownRemaining > 0 || isSending}

@@ -66,8 +66,8 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
         <button 
             onClick={handleLoginClick}
             className={`
-                border border-[#1D2025] dark:border-white hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors uppercase font-bold tracking-widest whitespace-nowrap
-                ${compact ? 'text-[10px] px-2 py-1' : 'text-xs px-4 py-2'}
+                border border-[#1D2025] dark:border-white hover:bg-[#1D2025] hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors uppercase font-bold tracking-widest whitespace-nowrap flex items-center justify-center
+                ${compact ? 'text-[10px] px-2 h-[28px]' : 'text-xs px-4 h-10'}
             `}
         >
             {t.login_btn}
