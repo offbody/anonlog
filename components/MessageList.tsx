@@ -2,27 +2,21 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { MessageListProps, Message } from '../types';
 import { MessageItem } from './MessageItem';
-import { LAST_READ_KEY } from '../constants';
 
-type TabType = 'all' | 'mine';
 type SortOrder = 'newest' | 'oldest' | 'best';
 
 export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserId, onReply, onTagClick, onFlashMessage, onDeleteMessage, onBlockUser, onVote, highlightedMessageId, allMessagesRaw, isAdmin, t, locale }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('all');
-  // CHANGED: Default sort order to 'newest' (Feed style)
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  // Default sort order changed to 'best'
+  const [sortOrder, setSortOrder] = useState<SortOrder>('best');
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   
   const bottomRef = useRef<HTMLDivElement>(null);
   const topRef = useRef<HTMLDivElement>(null);
+  const sortRef = useRef<HTMLDivElement>(null);
   
   // Refs to track if user is currently near the edge of the screen
   const isNearBottomRef = useRef(false);
   const isNearTopRef = useRef(true);
-
-  const [lastReadTime, setLastReadTime] = useState<number>(() => {
-      const stored = localStorage.getItem(LAST_READ_KEY);
-      return stored ? parseInt(stored, 10) : Date.now();
-  });
 
   // Track scroll position
   useEffect(() => {
@@ -42,42 +36,29 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // CHANGED: Removed auto-scroll on mount. 
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+            setIsSortDropdownOpen(false);
+        }
+    };
+    if (isSortDropdownOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSortDropdownOpen]);
+
   useEffect(() => {
     if (sortOrder === 'oldest' && isNearBottomRef.current && bottomRef.current) {
          bottomRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, sortOrder]);
 
-  const allMyDialogs = useMemo(() => {
-    const raw = allMessagesRaw || messages;
-    const myMessageIds = new Set(raw.filter(m => m.senderId === currentUserId).map(m => m.id));
-    
-    return raw.filter(msg => {
-        const isMyMessage = msg.senderId === currentUserId;
-        const isReplyToMe = msg.parentId && myMessageIds.has(msg.parentId);
-        return isMyMessage || isReplyToMe;
-    });
-  }, [allMessagesRaw, messages, currentUserId]);
-
   const filteredMessages = useMemo(() => {
-    let result: typeof messages = [];
-
-    if (activeTab === 'all') {
-        result = [...messages];
-    } else {
-        const myMessageIds = new Set(
-            (allMessagesRaw || messages)
-                .filter(m => m.senderId === currentUserId)
-                .map(m => m.id)
-        );
-
-        result = messages.filter(msg => {
-            const isMyMessage = msg.senderId === currentUserId;
-            const isReplyToMe = msg.parentId && myMessageIds.has(msg.parentId);
-            return isMyMessage || isReplyToMe;
-        });
-    }
+    let result = [...messages];
 
     return result.sort((a, b) => {
         if (sortOrder === 'newest') {
@@ -101,23 +82,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
             return b.timestamp - a.timestamp;
         }
     });
-  }, [messages, activeTab, currentUserId, allMessagesRaw, sortOrder]);
-
-  const hasUnread = useMemo(() => {
-      return allMyDialogs.some(msg => 
-          msg.timestamp > lastReadTime && 
-          msg.senderId !== currentUserId
-      );
-  }, [allMyDialogs, lastReadTime, currentUserId]);
-
-  const handleTabChange = (tab: TabType) => {
-      setActiveTab(tab);
-      if (tab === 'mine') {
-          const now = Date.now();
-          setLastReadTime(now);
-          localStorage.setItem(LAST_READ_KEY, now.toString());
-      }
-  };
+  }, [messages, sortOrder]);
 
   const getParentInfo = (parentId?: string | null) => {
       if (!parentId || !allMessagesRaw) return { seq: undefined, senderId: undefined };
@@ -128,78 +93,75 @@ export const MessageList: React.FC<MessageListProps> = ({ messages, currentUserI
       };
   };
 
+  const getSortLabel = (order: SortOrder) => {
+      switch(order) {
+          case 'newest': return t.sort_newest;
+          case 'oldest': return t.sort_oldest;
+          case 'best': return t.sort_best;
+      }
+  };
+
   return (
     <div className="w-full">
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-[#1D2025]/10 dark:border-white/10 pb-0">
-         <div className="flex items-center gap-8">
-            <button 
-                onClick={() => handleTabChange('all')}
-                className={`pb-4 text-sm font-bold uppercase tracking-widest transition-colors relative ${
-                    activeTab === 'all' 
-                    ? 'text-black dark:text-white' 
-                    : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'
-                }`}
-            >
-            {t.all_messages_tab} ({messages.length})
-            {activeTab === 'all' && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#1D2025] dark:bg-white"></div>
-            )}
-            </button>
+      {/* Header: Sort Dropdown Only (Left Aligned) */}
+      <div className="mb-8 flex items-center justify-start border-b border-[#1D2025]/10 dark:border-white/10 pb-4">
+         
+         <div className="relative" ref={sortRef}>
+             <button 
+                onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                className="flex items-center gap-2 h-10 px-4 border border-[#1D2025]/10 dark:border-white/10 hover:border-[#1D2025] dark:hover:border-white transition-colors bg-transparent text-black dark:text-white"
+             >
+                 <span className="text-xs font-bold uppercase tracking-widest">{getSortLabel(sortOrder)}</span>
+                 <span className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${isSortDropdownOpen ? 'rotate-180' : ''}`}>expand_more</span>
+             </button>
 
-            <button 
-                onClick={() => handleTabChange('mine')}
-                className={`pb-4 text-sm font-bold uppercase tracking-widest transition-colors relative flex items-center gap-2 ${
-                    activeTab === 'mine' 
-                    ? 'text-black dark:text-white' 
-                    : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'
-                }`}
-            >
-            {t.my_dialogs_tab}
-            {hasUnread && activeTab !== 'mine' && (
-                <div className="w-[6px] h-[6px] rounded-full bg-[#FF4343] animate-pulse shadow-[0_0_8px_rgba(255,67,67,0.6)]"></div>
-            )}
-            {activeTab === 'mine' && (
-                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#1D2025] dark:bg-white"></div>
-            )}
-            </button>
+             {isSortDropdownOpen && (
+                 <div className="absolute top-full left-0 mt-2 w-48 bg-[#FAF9F6] dark:bg-[#1D2025] border border-black/10 dark:border-white/10 shadow-xl z-50 animate-fade-in flex flex-col py-1">
+                     <button 
+                        onClick={() => { setSortOrder('best'); setIsSortDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-3 text-[10px] font-bold uppercase transition-colors text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 ${
+                            sortOrder === 'best' 
+                            ? 'bg-black/5 dark:bg-white/10' 
+                            : ''
+                        }`}
+                     >
+                         {t.sort_best}
+                     </button>
+                     <button 
+                        onClick={() => { setSortOrder('newest'); setIsSortDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-3 text-[10px] font-bold uppercase transition-colors text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 ${
+                            sortOrder === 'newest' 
+                            ? 'bg-black/5 dark:bg-white/10' 
+                            : ''
+                        }`}
+                     >
+                         {t.sort_newest}
+                     </button>
+                     <button 
+                        onClick={() => { setSortOrder('oldest'); setIsSortDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-3 text-[10px] font-bold uppercase transition-colors text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 ${
+                            sortOrder === 'oldest' 
+                            ? 'bg-black/5 dark:bg-white/10' 
+                            : ''
+                        }`}
+                     >
+                         {t.sort_oldest}
+                     </button>
+                 </div>
+             )}
          </div>
 
-         <div className="flex flex-wrap items-center gap-2 pb-4">
-            <button 
-                onClick={() => setSortOrder('newest')}
-                className={`transition-colors whitespace-nowrap font-mono text-sm uppercase tracking-widest ${sortOrder === 'newest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
-            >
-                <span className="lg:hidden">{t.sort_newest_short}</span>
-                <span className="hidden lg:inline">{t.sort_newest}</span>
-            </button>
-            <span className="opacity-30 text-black dark:text-white font-mono text-sm px-1">//</span>
-            <button 
-                onClick={() => setSortOrder('oldest')}
-                className={`transition-colors whitespace-nowrap font-mono text-sm uppercase tracking-widest ${sortOrder === 'oldest' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
-            >
-                <span className="lg:hidden">{t.sort_oldest_short}</span>
-                <span className="hidden lg:inline">{t.sort_oldest}</span>
-            </button>
-            <span className="opacity-30 text-black dark:text-white font-mono text-sm px-1">//</span>
-            <button 
-                onClick={() => setSortOrder('best')}
-                className={`transition-colors whitespace-nowrap font-mono text-sm uppercase tracking-widest ${sortOrder === 'best' ? 'text-black dark:text-white' : 'text-gray-400 dark:text-gray-600 hover:text-black dark:hover:text-white'}`}
-            >
-                <span className="lg:hidden">{t.sort_best_short}</span>
-                <span className="hidden lg:inline">{t.sort_best}</span>
-            </button>
-         </div>
       </div>
       
       {filteredMessages.length === 0 ? (
         <div className="w-full flex justify-center py-24 opacity-30">
             <p className="uppercase tracking-widest text-sm font-bold border-b border-[#1D2025] dark:border-white pb-1 text-black dark:text-white">
-                {activeTab === 'all' ? t.no_entries : t.no_dialogs}
+                {t.no_entries}
             </p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-            {/* Anchor for Newest Sort */}
+            {/* Anchor for Newest/Best Sort */}
             <div ref={topRef} />
             
             {filteredMessages.map((msg) => {

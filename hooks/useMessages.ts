@@ -21,7 +21,7 @@ const USER_ID_KEY = 'anon_log_user_id';
 
 // --- DEVELOPMENT CONFIG ---
 // Set this to TRUE to simulate a logged-in user in the Preview window
-const SIMULATE_AUTH_IN_PREVIEW = false; 
+const SIMULATE_AUTH_IN_PREVIEW = true; 
 
 // Name Generator for Google Users
 const generateCyberpunkName = (): string => {
@@ -53,7 +53,7 @@ export const useMessages = () => {
             email: 'architect@retrolog.ru',
             karma: 1984,
             createdAt: Date.now(),
-            emailVerified: false // Simulating unverified state for UI testing
+            emailVerified: true // Simulating verified state
         });
         setIsAuthLoading(false);
         return; 

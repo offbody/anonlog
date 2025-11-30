@@ -17,8 +17,8 @@ export const PixelCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Scale factor: 1 logical pixel = 4 screen pixels
-  const PIXEL_SCALE = 4;
+  // Scale factor: Reverted to 4.0 for proper pixel art proportions
+  const PIXEL_SCALE = 4.0;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,7 +37,7 @@ export const PixelCanvas: React.FC = () => {
 
     // Initialize figures based on low-res width
     const initFigures = (w: number, h: number) => {
-        const count = Math.max(3, Math.floor(w / 25)); // Density adjusted
+        const count = Math.max(3, Math.floor(w / 35)); 
         figures = [];
         
         // PLEASANT PALETTE (Soft, distinct, friendly)
@@ -71,11 +71,11 @@ export const PixelCanvas: React.FC = () => {
     const initSkyline = (w: number, h: number) => {
         skyline = [];
         
-        // Margins in logical pixels (Reduced to 4px as requested)
-        const margin = 4; 
+        // Margins in logical pixels
+        const margin = 2; 
         
-        // Vertical constraints
-        const maxBuildingHeight = h - (margin * 2);
+        // Vertical constraints - Full height allowed again
+        const maxBuildingHeight = h - margin;
         
         // Horizontal constraints
         const usableWidth = w - (margin * 2);
@@ -94,8 +94,8 @@ export const PixelCanvas: React.FC = () => {
             }
 
             // Height logic: tall buildings to fill the space
-            // Min height is 60% of max to ensure "wall" look
-            const minH = maxBuildingHeight * 0.6;
+            // Min height is 40% of max
+            const minH = maxBuildingHeight * 0.4;
             const buildingH = minH + Math.random() * (maxBuildingHeight - minH);
 
             buildings.push({ w: buildingW, h: buildingH });
@@ -123,7 +123,7 @@ export const PixelCanvas: React.FC = () => {
     };
 
     const resize = () => {
-        // Set internal resolution to be small
+        // Set internal resolution based on new scale
         canvas.width = Math.ceil(container.clientWidth / PIXEL_SCALE);
         canvas.height = Math.ceil(container.clientHeight / PIXEL_SCALE);
         ctx.imageSmoothingEnabled = false; // Reset on resize
@@ -179,7 +179,7 @@ export const PixelCanvas: React.FC = () => {
         // Light Mode: Black buildings (faint)
         ctx.fillStyle = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
         
-        const bottomMargin = 4; // Defined margin (Reduced to 4px)
+        const bottomMargin = 2; 
 
         skyline.forEach(b => {
             // Draw from bottom margin up
@@ -200,19 +200,19 @@ export const PixelCanvas: React.FC = () => {
         let px = Math.round(f.x);
         let py = Math.round(f.y);
 
-        // Height variation (Reduced base height from 5 to 3 for ~20% smaller look)
-        const h = 3 + f.variant; 
+        // Height variation (Increased base height 5 -> 6 for ~10% taller look)
+        const h = 6 + f.variant; 
 
-        // HEAD (Kept 3px wide for readability, but positioned lower relative to reduced body)
-        const headY = py - h - 2;
+        // HEAD
+        const headY = py - h - 3;
         ctx.fillRect(px - 1, headY, 3, 1); // Top cap
-        ctx.fillRect(px - 1, headY + 1, 3, 1); // Face
+        ctx.fillRect(px - 1, headY + 1, 3, 2); // Face (2px high for better proportions)
         
-        // BODY (Shorter)
-        drawLine(px, headY + 2, px, py - 2);
+        // BODY
+        drawLine(px, headY + 3, px, py - 3);
 
-        // ARMS (Shorter)
-        const armY = headY + 2;
+        // ARMS
+        const armY = headY + 3;
         if (f.state === 'walk') {
             // Swing arms
             const swing = animOffset ? 2 : -2;
@@ -225,7 +225,7 @@ export const PixelCanvas: React.FC = () => {
         }
 
         // LEGS
-        const legY = py - 2;
+        const legY = py - 3;
         if (f.state === 'walk') {
             const stride = animOffset ? 2 : 0;
             drawLine(px, legY, px - 2 + stride, py);
@@ -243,14 +243,14 @@ export const PixelCanvas: React.FC = () => {
                 // Ensure bubble uses same color as figure
                 ctx.fillStyle = f.color;
                 
-                // Reduced Bubble Size (was 11x7)
+                // Reduced Bubble Size (was 9x5, now 9x7 for better oval shape)
                 const bw = 9; 
-                const bh = 5;
+                const bh = 7;
                 
                 // Position bubble slightly to the right and above head
-                // Adjusted offset for smaller head size
-                const bx = px + 2; 
-                const by = headY - 6;
+                // Adjusted offset for smaller head size and increased bubble height
+                const bx = px + 3; 
+                const by = headY - 8;
                 
                 // Outline
                 // Top
@@ -270,7 +270,7 @@ export const PixelCanvas: React.FC = () => {
                 
                 // Typing Dots Animation inside bubble (Reduced count to fit)
                 const dots = Math.floor(time / 400) % 3;
-                const dotY = by + 2;
+                const dotY = by + 3; // Vertically centered in new height (7/2 ~= 3.5)
                 
                 // Dots at +2, +4, +6
                 if (dots >= 0) ctx.fillRect(bx + 2, dotY, 1, 1);

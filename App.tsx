@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { MessageList } from './components/MessageList';
 import { SearchBar } from './components/SearchBar';
@@ -19,6 +18,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { IconButton } from './components/IconButton';
 import { PrimaryButton } from './components/PrimaryButton';
 import { StickyInput } from './components/StickyInput';
+import { BottomTabBar } from './components/BottomTabBar';
 
 const App: React.FC = () => {
   const { messages, addMessage, deleteMessage, blockUser, toggleVote, userId, userProfile, loginWithGoogle, logout } = useMessages();
@@ -26,7 +26,33 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  
+  // Scroll Visibility Logic
+  const [showBars, setShowBars] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+        const currentScrollY = window.scrollY;
+        
+        // Show if at top or scrolling up
+        if (currentScrollY < 100) {
+            setShowBars(true);
+        } else if (currentScrollY > lastScrollY.current) {
+            // Scrolling down
+            setShowBars(false);
+        } else {
+            // Scrolling up
+            setShowBars(true);
+        }
+        
+        lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); 
   
@@ -129,30 +155,6 @@ const App: React.FC = () => {
   // Manual toggle
   const toggleTheme = () => setIsDark(!isDark);
   
-  const topSectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const isScrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-        setShowStickyHeader(isScrolledPast);
-      },
-      {
-        root: null,
-        threshold: 0, 
-        rootMargin: "-100px 0px 0px 0px" 
-      }
-    );
-
-    if (topSectionRef.current) {
-      observer.observe(topSectionRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
   const filteredMessages = useMemo(() => {
     if (selectedTag) {
         const targetTag = selectedTag.toLowerCase();
@@ -250,8 +252,9 @@ const App: React.FC = () => {
           />
       )}
 
+      {/* STICKY HEADER - Passed showBars for visibility toggle */}
       <StickyHeader 
-        isVisible={showStickyHeader} 
+        isVisible={showBars} 
         userProfile={userProfile}
         onLogin={() => loginWithGoogle()}
         onToggleMenu={() => setIsDrawerOpen(true)}
@@ -325,21 +328,24 @@ const App: React.FC = () => {
       <div className="min-h-screen w-full transition-colors duration-300 pb-24 bg-r-light dark:bg-r-dark text-black dark:text-white font-mono selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black">
         <div className="w-full max-w-[1600px] mx-auto px-6 sm:p-12 pt-6">
           
-          <div ref={topSectionRef}>
-            {/* UNIFIED HEADER (Desktop & Mobile) - Added relative z-20 and shrink-0 to prevent chrome collapsing */}
-            <header className="mb-6 md:mb-8 w-full h-16 sm:h-20 flex items-center justify-between border-b border-black dark:border-white pb-4 sm:pb-0 sm:border-none relative gap-4 z-20">
+          <div className="hidden md:block">
+            {/* UNIFIED HEADER (Desktop Only Now - Mobile handled by StickyHeader and BottomBar) */}
+            <header className="mb-6 md:mb-8 w-full h-20 flex items-center justify-between border-none relative gap-4 z-20">
+                {/* Desktop Header Content duplicates removed since StickyHeader handles sticky state, 
+                    but we keep the main logo/PixelCanvas block for desktop layout if needed at top.
+                    Actually, StickyHeader is now ALWAYS visible on desktop based on scroll, 
+                    but we need the initial 'hero' section content. 
+                */}
                 
-                {/* LEFT: Burger Menu & Search */}
-                <div className="flex-1 flex items-center justify-start gap-4 sm:gap-6 min-w-0">
+                {/* LEFT: Burger & Search */}
+                <div className="flex-1 flex items-center justify-start gap-6 min-w-0">
                     <IconButton 
                         onClick={() => setIsDrawerOpen(true)}
                         variant="outlined"
                         icon={<span className="material-symbols-outlined">menu</span>}
                         className="shrink-0"
                     />
-
-                    {/* Search Bar - Hidden on small mobile, visible on desktop. Added shrink-0 to prevent collapse in Chrome */}
-                    <div className="hidden md:block w-80 shrink-0">
+                    <div className="w-80 shrink-0">
                          <SearchBar value={searchQuery} onChange={handleSearchChange} t={t} variant="header" />
                     </div>
                 </div>
@@ -348,54 +354,30 @@ const App: React.FC = () => {
                 <div className="flex-none flex justify-center shrink-0">
                     <a 
                         href="/"
-                        className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-xs sm:text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap hidden sm:block shrink-0"
+                        className="border border-dashed border-black dark:border-white/50 px-4 py-2 uppercase text-sm tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap shrink-0"
                     >
                         {t.system_name}
-                    </a>
-                    {/* Mobile abbreviated name */}
-                     <a 
-                        href="/"
-                        className="border border-dashed border-black dark:border-white/50 px-2 py-2 uppercase text-xs tracking-widest font-bold transition-colors hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black whitespace-nowrap sm:hidden shrink-0"
-                    >
-                        RETROLOG
                     </a>
                 </div>
 
                 {/* RIGHT: Auth & Tools */}
-                <div className="flex-1 flex justify-end items-center gap-2 sm:gap-4 shrink-0">
-                    
-                    {/* Tool Bar Group */}
+                <div className="flex-1 flex justify-end items-center gap-4 shrink-0">
                     <div className="flex items-center gap-2 mr-2">
                          {userProfile && (
                              <>
-                                {/* Create Button - Hidden on very small screens to save space, visible on SM+ */}
-                                <div className="hidden sm:block">
-                                    <PrimaryButton 
-                                        variant="outlined"
-                                        onClick={openCreateModal}
-                                        icon={<span className="material-symbols-outlined text-[20px]">add</span>}
-                                    >
-                                        {t.action_create}
-                                    </PrimaryButton>
-                                </div>
-
-                                {/* Mobile Create Button (Icon Only) */}
-                                <div className="sm:hidden">
-                                    <IconButton 
-                                        variant="outlined"
-                                        onClick={openCreateModal}
-                                        icon={<span className="material-symbols-outlined">add</span>}
-                                    />
-                                </div>
+                                <PrimaryButton 
+                                    variant="outlined"
+                                    onClick={openCreateModal}
+                                    icon={<span className="material-symbols-outlined text-[20px]">add</span>}
+                                >
+                                    {t.action_create}
+                                </PrimaryButton>
                                 
-                                {/* Notifications */}
                                 <IconButton 
                                     variant="standard"
                                     badge={false} 
                                     icon={<span className="material-symbols-outlined">notifications</span>}
                                 />
-
-                                {/* Messages */}
                                 <IconButton 
                                     variant="standard"
                                     icon={<span className="material-symbols-outlined">chat</span>}
@@ -403,7 +385,6 @@ const App: React.FC = () => {
                              </>
                          )}
                     </div>
-
                     <AuthWidget 
                         user={userProfile} 
                         onLogin={loginWithGoogle} 
@@ -415,15 +396,16 @@ const App: React.FC = () => {
                 </div>
             </header>
 
-            <section className="w-full h-[100px] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-6 md:mb-8">
+            <section className="w-full h-[100px] border-b border-black/10 dark:border-white/10 relative overflow-hidden mb-8">
                 <PixelCanvas />
             </section>
           </div>
+          
+          {/* Mobile spacing adjustment since header is sticky */}
+          <div className="md:hidden h-16 w-full"></div>
 
-          {/* MAIN LAYOUT: CSS GRID (3 Columns Feed + 1 Column Sidebar) */}
+          {/* MAIN LAYOUT */}
           <main className="w-full max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-8">
-              
-              {/* Left Column (Feed) */}
               <div className="lg:col-span-3">
                   <MessageList 
                       messages={filteredMessages} 
@@ -442,7 +424,6 @@ const App: React.FC = () => {
                   />
               </div>
 
-              {/* Right Column (Sidebar) - Desktop Only. Add z-10 and w-full. Removed h-fit/self-start for Chrome stickiness stability */}
               <aside className="hidden lg:block lg:col-span-1 sticky top-24 w-full z-10 h-[calc(100vh-6rem)] overflow-y-auto no-scrollbar">
                    <PopularTags 
                       tags={popularTags} 
@@ -451,25 +432,32 @@ const App: React.FC = () => {
                       t={t} 
                       className="" 
                    />
-                   
                    <footer className="mt-12 text-xs uppercase tracking-widest text-gray-400 leading-relaxed opacity-50">
                        <p>{t.footer}</p>
                        <p className="mt-2">2025. MARK 1.</p>
                    </footer>
               </aside>
-
           </main>
           
           {/* Mobile Footer */}
-          <footer className="lg:hidden mt-24 py-6 text-center text-xs uppercase tracking-widest border-t border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400">
+          <footer className="lg:hidden mt-24 py-6 text-center text-xs uppercase tracking-widest border-t border-black/10 dark:border-white/10 text-gray-500 dark:text-gray-400 pb-24">
             <p>{t.footer}</p>
           </footer>
-
         </div>
 
         <ScrollToTop />
         
-        {/* Only show StickyInput when replying */}
+        {/* Mobile Bottom Tab Bar */}
+        {userProfile && (
+           <BottomTabBar 
+              isVisible={showBars} 
+              onCreateClick={openCreateModal}
+              onSearchClick={() => setIsDrawerOpen(true)}
+              t={t}
+           />
+        )}
+
+        {/* Sticky Input for Reply */}
         {userProfile && replyingTo && (
             <StickyInput 
               onSendMessage={handleSendMessage} 

@@ -142,25 +142,25 @@ export const MessageItem: React.FC<MessageItemProps> = ({
                 <div className="absolute right-0 top-full mt-2 w-48 bg-[#FAF9F6] dark:bg-[#1D2025] border border-black/10 dark:border-white/10 z-50 flex flex-col py-1 shadow-xl animate-fade-in">
                     
                     {/* Hide */}
-                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
+                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                         <span className="material-symbols-outlined text-[16px]">visibility_off</span>
                         {t.post_menu_hide}
                     </button>
                     
                     {/* Save */}
-                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
+                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                         <span className="material-symbols-outlined text-[16px]">bookmark</span>
                         {t.post_menu_save}
                     </button>
                     
                     {/* Subscribe */}
-                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
+                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                         <span className="material-symbols-outlined text-[16px]">notifications</span>
                         {t.post_menu_subscribe}
                     </button>
                     
                     {/* Report */}
-                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-red-600 dark:text-red-500 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors border-t border-black/10 dark:border-white/10">
+                    <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-red-600 dark:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors border-t border-black/10 dark:border-white/10">
                         <span className="material-symbols-outlined text-[16px]">flag</span>
                         {t.post_menu_report}
                     </button>
@@ -169,7 +169,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({
                     {(isAdmin || message.senderId === currentUserId) && (
                          <button 
                             onClick={(e) => { e.stopPropagation(); onDeleteMessage(message.id); }}
-                            className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-red-600 dark:text-red-500 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors border-t border-black/10 dark:border-white/10"
+                            className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-red-600 dark:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors border-t border-black/10 dark:border-white/10"
                         >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
                             DELETE POST

@@ -18,7 +18,8 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({
 }) => {
   
   // Updated baseStyles to include fixed height matching IconButton (h-[34px] sm:h-[40px])
-  const baseStyles = "flex items-center justify-center gap-2 px-4 h-[34px] sm:h-[40px] text-xs sm:text-sm font-bold uppercase tracking-widest transition-all duration-200 font-mono disabled:opacity-50 disabled:cursor-not-allowed";
+  // Updated tracking to tracking-[0.2em] to match LoginModal buttons
+  const baseStyles = "flex items-center justify-center gap-2 px-4 h-[34px] sm:h-[40px] text-xs sm:text-xs font-bold uppercase tracking-[0.2em] transition-all duration-200 font-mono disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants: Record<PrimaryButtonVariant, string> = {
     text: "bg-transparent text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10",

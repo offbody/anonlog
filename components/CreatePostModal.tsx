@@ -137,7 +137,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
       // 1. VIDEO LOGIC (Hard Limit, No Client Compression)
       if (file.type.startsWith('video/')) {
           if (file.size > MAX_FILE_SIZE) {
-              setUploadError(`VIDEO TOO LARGE (MAX 2MB)`);
+              setUploadError(`VIDEO TOO LARGE (>2MB)`);
               return;
           }
           setSelectedFile(file);
@@ -147,30 +147,31 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
 
       // 2. IMAGE LOGIC (Attempt Compression if > MAX_FILE_SIZE)
       if (file.type.startsWith('image/')) {
-          if (file.size > MAX_FILE_SIZE) {
-              try {
-                  setIsCompressing(true);
-                  // Attempt compression
-                  const compressedFile = await compressImage(file);
-                  
-                  // Re-check size after compression
-                  if (compressedFile.size > MAX_FILE_SIZE) {
-                      setUploadError(`IMAGE TOO LARGE EVEN AFTER COMPRESSION (>2MB)`);
-                      setSelectedFile(null);
-                  } else {
-                      setSelectedFile(compressedFile);
-                      setPreviewUrl(URL.createObjectURL(compressedFile));
-                  }
-              } catch (err) {
-                  console.error("Compression error:", err);
-                  setUploadError('COMPRESSION FAILED');
-              } finally {
-                  setIsCompressing(false);
-              }
-          } else {
-              // File is small enough, use as is
+          // If file is already small enough, use it
+          if (file.size <= MAX_FILE_SIZE) {
               setSelectedFile(file);
               setPreviewUrl(URL.createObjectURL(file));
+              return;
+          }
+
+          // If file is too big, try compression
+          try {
+              setIsCompressing(true);
+              const compressedFile = await compressImage(file);
+              
+              // Re-check size after compression
+              if (compressedFile.size > MAX_FILE_SIZE) {
+                  setUploadError(`IMAGE TOO LARGE (>2MB)`);
+                  setSelectedFile(null);
+              } else {
+                  setSelectedFile(compressedFile);
+                  setPreviewUrl(URL.createObjectURL(compressedFile));
+              }
+          } catch (err) {
+              console.error("Compression error:", err);
+              setUploadError('COMPRESSION FAILED');
+          } finally {
+              setIsCompressing(false);
           }
       }
   };
@@ -283,15 +284,6 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
 
             <div className="flex flex-col h-full overflow-y-auto">
                 <div className="p-4 sm:p-6 pb-0 flex flex-col gap-4 shrink-0">
-                    {/* Community Selector (Square) */}
-                    <div>
-                        <button className="flex items-center gap-2 bg-[#1D2025]/5 dark:bg-white/10 px-4 py-2 hover:bg-[#1D2025]/10 dark:hover:bg-white/20 transition-colors w-full sm:w-auto">
-                            <div className="w-5 h-5 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold text-[10px]">r/</div>
-                            <span className="text-sm font-bold text-black dark:text-white truncate">{t.choose_community}</span>
-                            <span className="material-symbols-outlined text-[16px] ml-auto sm:ml-2">expand_more</span>
-                        </button>
-                    </div>
-
                     {/* Tabs */}
                     <div className="flex items-center gap-8 border-b border-[#1D2025]/10 dark:border-white/10">
                         {[
@@ -471,17 +463,17 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
                     )}
                 </div>
 
-                {/* Footer Buttons (Square) - Heights fixed to h-10 (40px) */}
+                {/* Footer Buttons (Square) - Heights fixed to h-[40px] and tracking-[0.2em] to match LoginModal */}
                 <div className="flex items-center justify-end gap-3 p-4 sm:p-6 pt-0 shrink-0 bg-r-light dark:bg-r-dark z-10">
                      <button 
-                        className="h-[40px] px-6 border border-[#1D2025]/20 dark:border-white/20 text-xs font-bold uppercase tracking-widest text-[#1D2025] dark:text-white hover:bg-[#1D2025]/5 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+                        className="h-[40px] px-6 border border-[#1D2025]/20 dark:border-white/20 text-xs font-bold uppercase tracking-[0.2em] text-[#1D2025] dark:text-white hover:bg-[#1D2025]/5 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
                      >
                          {t.save_draft_btn}
                      </button>
                      <button 
                         onClick={handleSubmit}
                         disabled={isSubmitDisabled}
-                        className="h-[40px] px-6 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
+                        className="h-[40px] px-6 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-[0.2em] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
                      >
                          {isSending ? 'SENDING...' : t.publish_post_btn}
                      </button>

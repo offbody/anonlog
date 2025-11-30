@@ -91,17 +91,19 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
             onClick={() => setShowMenu(!showMenu)}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
         >
-            <div className="text-right hidden sm:block">
-                <div className="text-xs font-bold uppercase text-black dark:text-white group-hover:underline decoration-dashed underline-offset-4">
+            <div className="text-right hidden md:block">
+                {/* Username: text-sm (14px) */}
+                <div className="text-sm font-bold uppercase text-black dark:text-white group-hover:underline decoration-dashed underline-offset-4">
                     {user.displayName || 'USER'}
                 </div>
-                <div className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
+                {/* Karma: text-xs (12px) */}
+                <div className="text-xs font-mono text-gray-500 dark:text-gray-400">
                     KARMA: {user.karma}
                 </div>
             </div>
             
-            {/* User Avatar Component */}
-            <UserAvatar userId={user.uid} />
+            {/* User Avatar Component - 36px on mobile, 40px on desktop */}
+            <UserAvatar userId={user.uid} className="w-[36px] h-[36px] md:w-[40px] md:h-[40px]" />
         </button>
 
         {showMenu && (
@@ -109,7 +111,7 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
                 <div className="absolute right-0 top-full mt-2 w-64 bg-[#FAF9F6] dark:bg-[#1D2025] border border-black/10 dark:border-white/10 shadow-2xl z-40 animate-fade-in flex flex-col py-1">
                     
                     {/* Header (Mobile Only) */}
-                    <div className="p-4 border-b border-black/10 dark:border-white/10 sm:hidden">
+                    <div className="p-4 border-b border-black/10 dark:border-white/10 md:hidden">
                         <div className="text-xs font-bold uppercase text-black dark:text-white">
                             {user.displayName}
                         </div>
@@ -133,13 +135,13 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
 
                     <div className="flex flex-col">
                          {/* PROFILE */}
-                         <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
+                         <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                             <span className="material-symbols-outlined text-[16px]">person</span>
                             {t.menu_profile}
                          </button>
 
                          {/* SETTINGS */}
-                         <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
+                         <button className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
                             <span className="material-symbols-outlined text-[16px]">settings</span>
                             {t.menu_settings}
                          </button>
@@ -147,7 +149,7 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
                          {/* THEME TOGGLE */}
                          <button 
                             onClick={(e) => { e.stopPropagation(); toggleTheme(); }}
-                            className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                            className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                          >
                             {isDark ? (
                                 <>
@@ -167,7 +169,7 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
                          {/* LOGOUT */}
                          <button 
                             onClick={onLogout}
-                            className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-red-600 dark:text-red-500 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors"
+                            className="flex items-center gap-3 w-full text-left px-4 py-3 text-[10px] font-bold uppercase text-red-600 dark:text-red-500 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                          >
                             <span className="material-symbols-outlined text-[16px]">logout</span>
                             {t.logout_btn}
