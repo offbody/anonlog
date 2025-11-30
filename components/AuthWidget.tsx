@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Translations, UserProfile } from '../types';
 import { LoginModal } from './LoginModal';
-import { generateColorFromId } from './IdentityWidget';
+import { UserAvatar } from './UserAvatar';
 
 interface AuthWidgetProps {
   user: UserProfile | null;
@@ -53,9 +53,6 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
     );
   }
 
-  // Generate color for the avatar square
-  const avatarColor = generateColorFromId(user.uid);
-
   return (
     <div className="relative z-40">
         <button 
@@ -71,12 +68,8 @@ export const AuthWidget: React.FC<AuthWidgetProps> = ({ user, onLogin, onLogout,
                 </div>
             </div>
             
-            {/* Unified Avatar: Colored Square for all users (Google & Email) */}
-            <div 
-                className="w-8 h-8 border border-[#1D2025] dark:border-white flex items-center justify-center"
-                style={{ backgroundColor: avatarColor }}
-            >
-            </div>
+            {/* User Avatar Component */}
+            <UserAvatar userId={user.uid} />
         </button>
 
         {showMenu && (

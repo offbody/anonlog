@@ -1,4 +1,6 @@
 
+
+
 import { Translations, Language } from './types';
 
 export const STORAGE_KEY = 'anon_log_messages';
@@ -100,7 +102,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     auth_verification_sent: 'VERIFICATION EMAIL SENT',
   },
   ru: {
-    system_name: 'РЕТРОЛОГ // ВАЙБ НУЛЕВЫХ',
+    system_name: 'РЕТРОЛОГ // ВАЙБ 8-БИТНОЙ ЭПОХИ',
     footer: 'Децентрализация // Сообщество // Наследие',
     search_label: 'ПОИСК //',
     search_placeholder: 'НАЙТИ ТЕМУ...',
@@ -137,7 +139,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     sort_oldest_short: 'СТАРЫЕ',
     sort_best_short: 'ТОП',
     popular_tags_label: 'СООБЩЕСТВА',
-    preloader_title: 'RETROLOG',
+    preloader_title: 'РЕТРОЛОГ',
     preloader_subtitle: 'УСТАНОВКА СВЯЗИ',
     next_msg_label: 'СЛЕД.',
     admin_login_title: 'ROOT ДОСТУП',

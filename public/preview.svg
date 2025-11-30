@@ -1,4 +1,5 @@
 
+
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
   <rect width="1200" height="630" fill="#050505"/>
@@ -30,7 +31,7 @@
     <text x="600" y="315" font-size="90" fill="#FFFFFF">RETROLOG.RU</text>
     
     <!-- Subtitle -->
-    <text x="600" y="390" font-size="24" fill="#888888" letter-spacing="6" font-weight="normal">ВАЙБ НУЛЕВЫХ</text>
+    <text x="600" y="390" font-size="24" fill="#888888" letter-spacing="6" font-weight="normal">ВАЙБ 8-БИТНОЙ ЭПОХИ</text>
   </g>
   
   <!-- Decorative Corners -->
