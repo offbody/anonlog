@@ -134,29 +134,29 @@ const parseInline = (text: string): React.ReactNode[] => {
 
     // Apply rules in specific order
     // 1. Images ![alt](url)
-    apply(/!\[(.*?)\]\((.*?)\)/g, (m, alt, url) => (
+    apply(/!\[(.*?)\]\((.*?)\)/g, (_m, alt, url) => (
         <img key={Math.random()} src={url} alt={alt} className="max-w-full h-auto max-h-[300px] border border-[#1D2025]/20 dark:border-white/20 my-2 block" />
     ));
     // 2. Spoilers >!text!<
-    apply(/>!(.*?)!</g, (m, c) => (
+    apply(/>!(.*?)!</g, (_m, c) => (
         <span key={Math.random()} className="bg-black dark:bg-white text-transparent hover:text-white dark:hover:text-black hover:bg-black/80 dark:hover:bg-white/80 transition-colors cursor-pointer px-1 rounded-sm select-none" title="Spoiler">
             {c}
         </span>
     ));
     // 3. Links [text](url)
-    apply(/\[(.*?)\]\((.*?)\)/g, (m, t, u) => (
+    apply(/\[(.*?)\]\((.*?)\)/g, (_m, t, u) => (
         <a key={Math.random()} href={u} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
             {t}
         </a>
     ));
     // 4. Bold **text**
-    apply(/\*\*(.*?)\*\*/g, (m, c) => <strong key={Math.random()} className="font-bold">{c}</strong>);
+    apply(/\*\*(.*?)\*\*/g, (_m, c) => <strong key={Math.random()} className="font-bold">{c}</strong>);
     // 5. Italic *text*
-    apply(/\*(.*?)\*/g, (m, c) => <em key={Math.random()} className="italic">{c}</em>);
+    apply(/\*(.*?)\*/g, (_m, c) => <em key={Math.random()} className="italic">{c}</em>);
     // 6. Strike ~~text~~
-    apply(/~~(.*?)~~/g, (m, c) => <span key={Math.random()} className="line-through opacity-70">{c}</span>);
+    apply(/~~(.*?)~~/g, (_m, c) => <span key={Math.random()} className="line-through opacity-70">{c}</span>);
     // 7. Inline Code `text`
-    apply(/`(.*?)`/g, (m, c) => <code key={Math.random()} className="bg-black/10 dark:bg-white/10 px-1 font-mono text-xs border border-black/10 dark:border-white/10">{c}</code>);
+    apply(/`(.*?)`/g, (_m, c) => <code key={Math.random()} className="bg-black/10 dark:bg-white/10 px-1 font-mono text-xs border border-black/10 dark:border-white/10">{c}</code>);
 
     return parts;
 };

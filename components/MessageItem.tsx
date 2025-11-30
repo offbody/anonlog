@@ -1,8 +1,7 @@
 
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MessageItemProps, Translations } from '../types';
 import { UserAvatar } from './UserAvatar';
-import { IdentityWidget } from './IdentityWidget';
 
 // --- Helper Functions ---
 
@@ -45,14 +44,8 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   currentUserId, 
   onReply, 
   onTagClick, 
-  onFlashMessage, 
   onDeleteMessage, 
-  onBlockUser, 
   onVote, 
-  parentSequenceNumber, 
-  parentSenderId, 
-  allMessages, 
-  isFlashHighlighted, 
   isAdmin, 
   t 
 }) => {
@@ -65,7 +58,6 @@ export const MessageItem: React.FC<MessageItemProps> = ({
   // Counters (Mock/Real)
   const likeCount = score > 0 ? score : 0; // Simplified for UI
   const commentCount = message.commentCount || 0;
-  const shareCount = message.shareCount || 0;
 
   // Media Logic
   const hasMedia = message.media && message.media.length > 0;

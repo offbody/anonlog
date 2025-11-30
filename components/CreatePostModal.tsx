@@ -1,8 +1,7 @@
 
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Translations } from '../types';
-import { MAX_TAG_LENGTH, MAX_TITLE_LENGTH, MAX_MESSAGE_LENGTH } from '../constants';
+import { MAX_TITLE_LENGTH, MAX_MESSAGE_LENGTH } from '../constants';
 
 interface CreatePostModalProps {
   onClose: () => void;
@@ -141,7 +140,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
                     </div>
 
                     {/* Title Input (Square) */}
-                    <div className="relative">
+                    <div className="relative group">
                         <input 
                             type="text"
                             value={title}
