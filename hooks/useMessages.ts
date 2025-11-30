@@ -225,7 +225,7 @@ export const useMessages = () => {
   }, []);
 
   // 6. Add Post/Message
-  const addMessage = useCallback(async (content: string, title: string, parentId?: string, manualTags: string[] = []) => {
+  const addMessage = useCallback(async (content: string, title: string, parentId?: string, manualTags: string[] = [], media: string[] = []) => {
     if (!userId) return;
 
     // Tags Logic
@@ -266,7 +266,7 @@ export const useMessages = () => {
             isAdmin: false,
             votes: {},
             commentCount: 0,
-            media: []
+            media: media || []
         };
 
         setMessages(prev => [newSimMsg, ...prev]);
@@ -293,7 +293,7 @@ export const useMessages = () => {
         isAdmin: isAdmin,
         votes: {},
         commentCount: 0,
-        media: []
+        media: media || []
       };
 
       if (title && title.trim()) {

@@ -161,7 +161,8 @@ export interface Translations {
 }
 
 export interface MessageInputProps {
-  onSendMessage: (content: string, title: string, manualTags?: string[]) => Promise<void>;
+  // Added optional media argument
+  onSendMessage: (content: string, title: string, manualTags?: string[], media?: string[]) => Promise<void>;
   replyingTo: Message | null;
   onCancelReply: () => void;
   shouldFocusOnReply?: boolean;

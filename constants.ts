@@ -8,6 +8,9 @@ export const MAX_MESSAGE_LENGTH = 2000;
 export const MAX_TITLE_LENGTH = 300;
 export const MAX_TAG_LENGTH = 32;
 
+// 2MB limit for Firebase Free tier safety
+export const MAX_FILE_SIZE = 2 * 1024 * 1024; 
+
 export const PREDEFINED_TAGS = [
   'Киберпанк', 'Технологии', 'Кодинг', 'Дизайн', 'Крипта', 'ИИ',
   'Игры', 'Музыка', 'Кино', 'Мемы', 'Новости', 'Наука',
@@ -207,7 +210,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     auth_no_account: 'ЕЩЕ НЕТ АККАУНТА?',
     auth_submit_login: 'ВОЙТИ',
     auth_submit_register: 'ПРОДОЛЖИТЬ',
-    auth_disclaimer: 'ИНИЦИАЛИЗАЦИЯ СЕССИИ. ПРОДОЛЖАЯ, ВЫ ПОДТВЕРЖДАЕТЕ СОГЛАСИЕ С ПРОТОКОЛОМ 7 (ПРАВИЛА) И ПОЛИТИКОЙ ХРАНЕНИЯ ДАННЫХ.',
+    auth_disclaimer: 'ИНИЦИАЛИЗАЦИЯ СЕССИИ. ПРОДОЛЖАЯ, ВЫ ПОДТВЕРЖДАЕТЕ СОГЛАСИЕ С ПРОТОКОЛОМ 7 (УСЛОВИЯ) И ПОЛИТИКОЙ ДАННЫХ.',
     auth_switch_login: 'ВОЙТИ',
     auth_switch_register: 'ЗАРЕГИСТРИРОВАТЬСЯ',
     // Auth Errors
@@ -220,46 +223,47 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     error_weak_password: 'ПАРОЛЬ СЛИШКОМ ПРОСТОЙ',
     error_missing_fields: 'ЗАПОЛНИТЕ ВСЕ ПОЛЯ',
     // Auth Success
-    auth_reset_sent: 'ССЫЛКА СБРОСА ОТПРАВЛЕНА',
-    auth_verification_sent: 'ПИСЬМО ПОДТВЕРЖДЕНИЯ ОТПРАВЛЕНО',
+    auth_reset_sent: 'ССЫЛКА ДЛЯ СБРОСА ОТПРАВЛЕНА',
+    auth_verification_sent: 'ПИСЬМО С ПОДТВЕРЖДЕНИЕМ ОТПРАВЛЕНО',
     // Post Menu
     post_menu_hide: 'СКРЫТЬ',
     post_menu_save: 'СОХРАНИТЬ',
     post_menu_subscribe: 'ПОДПИСАТЬСЯ',
     post_menu_report: 'ПОЖАЛОВАТЬСЯ',
     // Post Time
-    time_sec_ago: 'сек. назад',
-    time_min_ago: 'мин. назад',
-    time_hour_ago: 'ч. назад',
-    time_day_ago: 'д. назад',
-    time_days_ago: 'дн. назад',
-    time_month_ago: 'мес. назад',
-    time_year_ago: 'г. назад',
-    time_years_ago: 'л. назад',
+    time_sec_ago: 'с назад',
+    time_min_ago: 'м назад',
+    time_hour_ago: 'ч назад',
+    time_day_ago: 'д назад',
+    time_days_ago: 'д назад',
+    time_month_ago: 'мес назад',
+    time_year_ago: 'г назад',
+    time_years_ago: 'г назад',
     // User Menu
     menu_profile: 'ПРОФИЛЬ',
     menu_settings: 'НАСТРОЙКИ',
     menu_theme_day: 'ТЕМА: ДЕНЬ',
     menu_theme_night: 'ТЕМА: НОЧЬ',
     email_verification_alert: 'EMAIL НЕ ПОДТВЕРЖДЕН',
-    email_verification_action: 'Подтвердите email, чтобы создавать посты и комментарии.',
+    email_verification_action: 'Подтвердите почту для создания постов и комментариев.',
     // Actions
     action_create: 'СОЗДАТЬ',
     // Create Post Modal
     create_post_title: 'Создать пост',
     drafts_btn: 'Черновики',
-    choose_community: 'Выберите сообщество',
+    choose_community: 'Выбрать сообщество',
     tab_text: 'Текст',
-    tab_media: 'Изображения и видео',
+    tab_media: 'Медиа',
     tab_link: 'Ссылка',
     tab_poll: 'Опрос',
     title_required_placeholder: 'Заголовок*',
     text_area_optional: 'Текст*',
-    save_draft_btn: 'Сохранить черновик',
+    save_draft_btn: 'В черновик',
     publish_post_btn: 'Опубликовать',
-    media_drag_drop: 'Перетащить или загрузить медиафайлы',
-    link_url_placeholder: 'URL-адрес ссылки',
-    editor_write: 'РЕДАКТОР',
-    editor_preview: 'ПРОСМОТР',
+    media_drag_drop: 'Перетащите или загрузите медиа',
+    link_url_placeholder: 'URL ссылки',
+    // Editor
+    editor_write: 'НАПИСАТЬ',
+    editor_preview: 'ПРЕДПРОСМОТР',
   }
 };

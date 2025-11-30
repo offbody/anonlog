@@ -1,11 +1,14 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Translations } from '../types';
-import { MAX_TITLE_LENGTH, MAX_MESSAGE_LENGTH } from '../constants';
+import { MAX_TITLE_LENGTH, MAX_MESSAGE_LENGTH, MAX_FILE_SIZE } from '../constants';
+import { storage } from '../firebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 interface CreatePostModalProps {
   onClose: () => void;
-  onSendMessage: (content: string, title: string, manualTags?: string[]) => Promise<void>;
+  onSendMessage: (content: string, title: string, manualTags?: string[], media?: string[]) => Promise<void>;
   t: Translations;
 }
 
@@ -19,6 +22,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
   const [tagInputText, setTagInputText] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  
+  // File Upload State
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const tagInputRef = useRef<HTMLInputElement>(null);
@@ -41,11 +50,63 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
     }
   }, [showTagInput]);
 
+  // Clean up preview URL
+  useEffect(() => {
+      return () => {
+          if (previewUrl) URL.revokeObjectURL(previewUrl);
+      };
+  }, [previewUrl]);
+
+  const handleFileSelect = (file: File) => {
+      setUploadError(null);
+      
+      // Size Validation
+      if (file.size > MAX_FILE_SIZE) {
+          setUploadError(`FILE TOO LARGE (MAX 2MB)`);
+          return;
+      }
+
+      // Type Validation (Image or Video)
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+          setUploadError('UNSUPPORTED FILE TYPE');
+          return;
+      }
+
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          handleFileSelect(e.target.files[0]);
+      }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleFileSelect(e.dataTransfer.files[0]);
+      }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+  };
+
+  const removeFile = () => {
+      setSelectedFile(null);
+      if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl(null);
+      }
+  };
+
   const handleSubmit = async () => {
       // Validation Logic
       if (!title.trim()) return;
       if (activeTab === 'text' && !text.trim()) return;
       if (activeTab === 'link' && !linkUrl.trim()) return;
+      if (activeTab === 'media' && !selectedFile) return;
       if (isSending) return;
       
       setIsSending(true);
@@ -58,16 +119,36 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
       try {
           // Combine content based on active tab
           let finalContent = text;
+          let mediaUrls: string[] = [];
           
           if (activeTab === 'link' && linkUrl.trim()) {
               // If link tab, append link to text or use as sole content
               finalContent = `${text}\n\n${linkUrl.trim()}`.trim();
           }
 
-          await onSendMessage(finalContent, title, manualTags);
+          if (activeTab === 'media' && selectedFile) {
+              // Upload to Firebase Storage
+              const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(7)}_${selectedFile.name}`;
+              const storageRef = ref(storage, `uploads/${uniqueName}`);
+              
+              await uploadBytes(storageRef, selectedFile);
+              const downloadUrl = await getDownloadURL(storageRef);
+              mediaUrls.push(downloadUrl);
+              
+              // Use caption as text content if provided (optional)
+              // For now, we leave finalContent empty if user didn't switch tabs to add text, 
+              // or we can allow adding text in media tab later. 
+              // The logic here assumes 'text' state is shared across tabs if we wanted, 
+              // but UI hides textarea in media tab. 
+              // Let's assume Media posts are just Title + Media for now, or minimal content.
+              if (!finalContent) finalContent = ""; 
+          }
+
+          await onSendMessage(finalContent, title, manualTags, mediaUrls);
           onClose();
       } catch (e) {
           console.error(e);
+          setUploadError('UPLOAD FAILED');
           setIsSending(false);
       }
   };
@@ -85,7 +166,8 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
       isSending || 
       !title.trim() || 
       (activeTab === 'text' && !text.trim()) || 
-      (activeTab === 'link' && !linkUrl.trim());
+      (activeTab === 'link' && !linkUrl.trim()) ||
+      (activeTab === 'media' && !selectedFile);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in font-mono">
@@ -199,16 +281,61 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
                     )}
 
                     {activeTab === 'media' && (
-                        <div className="w-full h-[300px] border border-dashed border-[#1D2025]/20 dark:border-white/20 flex flex-col items-center justify-center gap-6 hover:bg-[#1D2025]/5 dark:hover:bg-white/5 transition-colors cursor-pointer group bg-[#1D2025]/[0.02] dark:bg-white/[0.02]">
-                            <div className="w-16 h-16 bg-[#1D2025]/10 dark:bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <span className="material-symbols-outlined text-[#1D2025] dark:text-white text-[32px]">cloud_upload</span>
-                            </div>
-                            <div className="text-center">
-                                <span className="text-sm font-bold uppercase tracking-widest text-[#1D2025] dark:text-white block mb-2">
-                                    {t.media_drag_drop}
-                                </span>
-                                <span className="text-xs text-gray-500 font-mono">JPG, PNG, GIF, MP4 (MAX 10MB)</span>
-                            </div>
+                        <div className="h-[300px] flex flex-col gap-2">
+                            {/* File Preview Area */}
+                            {selectedFile ? (
+                                <div className="w-full h-full border border-[#1D2025]/20 dark:border-white/20 relative flex items-center justify-center bg-black">
+                                    {selectedFile.type.startsWith('image/') ? (
+                                        <img src={previewUrl!} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                    ) : (
+                                        <video src={previewUrl!} className="max-w-full max-h-full object-contain" controls />
+                                    )}
+                                    
+                                    <button 
+                                        onClick={removeFile}
+                                        className="absolute top-2 right-2 w-8 h-8 bg-black/50 hover:bg-red-600 text-white flex items-center justify-center transition-colors"
+                                        title="Remove file"
+                                    >
+                                        <span className="material-symbols-outlined">close</span>
+                                    </button>
+                                    
+                                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-[10px] font-mono">
+                                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                    </div>
+                                </div>
+                            ) : (
+                                // Upload Area
+                                <div 
+                                    onDrop={handleDrop}
+                                    onDragOver={handleDragOver}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-full h-full border-2 border-dashed border-[#1D2025]/20 dark:border-white/20 flex flex-col items-center justify-center gap-6 hover:bg-[#1D2025]/5 dark:hover:bg-white/5 transition-colors cursor-pointer group bg-[#1D2025]/[0.02] dark:bg-white/[0.02]"
+                                >
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        className="hidden" 
+                                        accept="image/*,video/*"
+                                        onChange={onFileInputChange}
+                                    />
+                                    
+                                    <div className="w-16 h-16 bg-[#1D2025]/10 dark:bg-white/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <span className="material-symbols-outlined text-[#1D2025] dark:text-white text-[32px]">cloud_upload</span>
+                                    </div>
+                                    <div className="text-center">
+                                        <span className="text-sm font-bold uppercase tracking-widest text-[#1D2025] dark:text-white block mb-2">
+                                            {t.media_drag_drop}
+                                        </span>
+                                        <span className="text-xs text-gray-500 font-mono">JPG, PNG, GIF, MP4 (MAX 2MB)</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {uploadError && (
+                                <div className="text-red-500 text-xs font-bold uppercase tracking-widest animate-pulse">
+                                    [ERROR]: {uploadError}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -238,14 +365,14 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, onSen
                 {/* Footer Buttons (Square) - Heights fixed to h-10 (40px) */}
                 <div className="flex items-center justify-end gap-3 p-4 sm:p-6 pt-0 shrink-0 bg-r-light dark:bg-r-dark z-10">
                      <button 
-                        className="h-10 px-6 border border-[#1D2025]/20 dark:border-white/20 text-xs font-bold uppercase tracking-widest text-[#1D2025] dark:text-white hover:bg-[#1D2025]/5 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
+                        className="h-[40px] px-6 border border-[#1D2025]/20 dark:border-white/20 text-xs font-bold uppercase tracking-widest text-[#1D2025] dark:text-white hover:bg-[#1D2025]/5 dark:hover:bg-white/10 transition-colors flex items-center justify-center"
                      >
                          {t.save_draft_btn}
                      </button>
                      <button 
                         onClick={handleSubmit}
                         disabled={isSubmitDisabled}
-                        className="h-10 px-6 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
+                        className="h-[40px] px-6 bg-[#1D2025] dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
                      >
                          {isSending ? 'SENDING...' : t.publish_post_btn}
                      </button>
