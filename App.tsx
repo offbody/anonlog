@@ -259,11 +259,8 @@ const App: React.FC = () => {
         onLogin={() => loginWithGoogle()}
         onToggleMenu={() => setIsDrawerOpen(true)}
         t={t}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
         isDark={isDark}
         toggleTheme={toggleTheme}
-        onCreateClick={openCreateModal}
       />
       
       {/* SIDEBAR DRAWER (Mobile & Desktop Triggered by Burger) */}

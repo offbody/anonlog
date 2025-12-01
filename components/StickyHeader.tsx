@@ -1,10 +1,8 @@
 
 import React from 'react';
 import { Translations, UserProfile } from '../types';
-import { SearchBar } from './SearchBar';
 import { AuthWidget } from './AuthWidget';
 import { IconButton } from './IconButton';
-import { PrimaryButton } from './PrimaryButton';
 import { PixelCanvas } from './PixelCanvas';
 
 interface StickyHeaderProps {
@@ -13,11 +11,8 @@ interface StickyHeaderProps {
   onLogin: () => Promise<void>;
   onToggleMenu: () => void;
   t: Translations;
-  searchQuery?: string;
-  onSearchChange?: (val: string) => void;
   isDark: boolean;
   toggleTheme: () => void;
-  onCreateClick?: () => void;
 }
 
 export const StickyHeader: React.FC<StickyHeaderProps> = ({ 
@@ -26,11 +21,8 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
   onLogin, 
   onToggleMenu, 
   t, 
-  searchQuery = '', 
-  onSearchChange = () => {}, 
   isDark, 
-  toggleTheme,
-  onCreateClick 
+  toggleTheme
 }) => {
   return (
     <div 
@@ -47,13 +39,14 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
                     onClick={onToggleMenu}
                     variant="outlined"
                     icon={<span className="material-symbols-outlined">menu</span>}
-                    className="shrink-0 !border-none"
+                    className="shrink-0 !border-none md:!border"
                 />
             </div>
             
-            {/* Center: Mobile Pixel Canvas (Scaled Down 2.5x) */}
+            {/* Center: Mobile Pixel Canvas (Scaled Down via CSS) */}
             <div className="flex-1 flex justify-center min-w-0 mx-2 overflow-hidden">
                 <div className="h-[36px] w-full max-w-[228px] relative">
+                    {/* Scale 0.4 of 250% size = original size but rendered internally at higher res then shrunk */}
                     <div className="absolute top-0 left-0 w-[250%] h-[250%] origin-top-left scale-[0.4]">
                         <PixelCanvas />
                     </div>

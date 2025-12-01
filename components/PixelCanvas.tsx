@@ -176,8 +176,8 @@ export const PixelCanvas: React.FC = () => {
         let px = Math.round(f.x);
         let py = Math.round(f.y);
 
-        // Height variation (Reduced by ~15% - from 5 to 4)
-        const h = 4 + f.variant; 
+        // Height variation (Reduced from 4 to 3 for ~15% reduction)
+        const h = 3 + f.variant; 
 
         // HEAD
         const headY = py - h - 3;
@@ -185,6 +185,7 @@ export const PixelCanvas: React.FC = () => {
         ctx.fillRect(px - 1, headY + 1, 3, 2); // Face (2px high for better proportions)
         
         // BODY
+        // With h=3, headY+3 is typically py-3, which is where legs start. Body length effectively 0 or 1.
         drawLine(px, headY + 3, px, py - 3);
 
         // ARMS
@@ -219,12 +220,11 @@ export const PixelCanvas: React.FC = () => {
                 // Ensure bubble uses same color as figure
                 ctx.fillStyle = f.color;
                 
-                // Reduced Bubble Size (REVERTED to 9x5)
+                // Reduced Bubble Size (9x5)
                 const bw = 9; 
                 const bh = 5;
                 
                 // Position bubble slightly to the right and above head
-                // Adjusted offset (REVERTED to -6)
                 const bx = px + 3; 
                 const by = headY - 6;
                 

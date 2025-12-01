@@ -20,31 +20,39 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ isVisible, onCreateC
         {/* Search */}
         <button 
           onClick={onSearchClick}
+          title={t.search_label}
           className="flex flex-col items-center justify-center gap-1 w-16 h-full text-black dark:text-white hover:opacity-70 transition-opacity"
         >
            <span className="material-symbols-outlined text-[24px]">search</span>
-           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">Поиск</span>
+           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">ПОИСК</span>
         </button>
 
         {/* Notifications */}
-        <button className="flex flex-col items-center justify-center gap-1 w-16 h-full text-black dark:text-white hover:opacity-70 transition-opacity">
+        <button 
+          title={t.my_dialogs_tab}
+          className="flex flex-col items-center justify-center gap-1 w-16 h-full text-black dark:text-white hover:opacity-70 transition-opacity"
+        >
            <span className="material-symbols-outlined text-[24px]">notifications</span>
-           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">Увед.</span>
+           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">УВЕД.</span>
         </button>
 
-        {/* Create (Normalized Style) */}
+        {/* Create */}
         <button 
           onClick={onCreateClick}
+          title={t.action_create}
           className="flex flex-col items-center justify-center gap-1 w-16 h-full text-black dark:text-white hover:opacity-70 transition-opacity"
         >
            <span className="material-symbols-outlined text-[24px]">add_circle</span>
-           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">Создать</span>
+           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">СОЗДАТЬ</span>
         </button>
 
-        {/* Messages */}
-        <button className="flex flex-col items-center justify-center gap-1 w-16 h-full text-black dark:text-white hover:opacity-70 transition-opacity">
+        {/* Feed */}
+        <button 
+          title={t.all_messages_tab}
+          className="flex flex-col items-center justify-center gap-1 w-16 h-full text-black dark:text-white hover:opacity-70 transition-opacity"
+        >
            <span className="material-symbols-outlined text-[24px]">chat</span>
-           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">Чаты</span>
+           <span className="text-[9px] font-bold uppercase tracking-widest opacity-50">ЛЕНТА</span>
         </button>
       </div>
     </div>
